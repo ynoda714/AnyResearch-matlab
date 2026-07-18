@@ -1,0 +1,50 @@
+# Runtime artifacts
+result/**
+!result/.gitkeep
+
+# Data artifacts
+*.csv
+*.xlsx
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Editor / OS
+# NOTE: use ".vscode/*" (not ".vscode/") so the negation below can take effect.
+# Git cannot re-include a file if its parent directory itself is excluded.
+.vscode/*
+!.vscode/mcp.json
+.DS_Store
+Thumbs.db
+
+# MATLAB temporary files
+*.asv
+*.m~
+
+# Local secrets
+apiKey.txt
+config/settings.json
+*.key
+*.secret
+
+# Temp / debug files
+tmp/
+test/eval/
+
+# Logs
+logs/
+
+# AI context — explicitly tracked in dev repo
+# (skills, if added, live in skills/<name>/SKILL.md at repo root -- see AGENTS.md)
+!AGENTS.md
+!CLAUDE.md
+.claude/settings.local.json
+
+# Note: files below are tracked in this dev repo but EXCLUDED from the public repo via tools/sync_to_public.ps1
+# - AGENTS.md (project rules SSOT — dev only)
+# - CLAUDE.md (thin wrapper pointing to AGENTS.md)
+# - PLAN.md
+# - docs/adr.md (if created)
+# - tools/_* (internal tooling)

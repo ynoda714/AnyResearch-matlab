@@ -1,0 +1,40 @@
+{
+    "_comment": "Copy this file to config/settings.json and edit as needed.",
+    "_priority": "Environment variables > config/settings.json > defaults",
+    "_env_naming": "ANYRESEARCH_<SECTION>_<KEY> (e.g., ANYRESEARCH_OPENALEX_API_KEY)",
+
+    "openalex": {
+        "api_key": "",
+        "per_page": 100,
+        "max_pages": 10,
+        "default_filter": "is_oa:true,has_abstract:true"
+    },
+
+    "search": {
+        "query": "",
+        "from_date": "",
+        "to_date": "",
+        "language": "en",
+        "require_open_access": true
+    },
+
+    "output": {
+        "root_dir": "result/runs",
+        "excel_enabled": true,
+        "csv_enabled": true,
+        "jsonl_enabled": true
+    },
+
+    "pdf": {
+        "enable_download": false,
+        "max_rows": 20,
+        "timeout_sec": 60,
+        "enable_text_extraction": true,
+        "enable_keyword_evidence": true
+    },
+
+    "batch": {
+        "root_dir": "result/batch",
+        "institutions_csv": "data/list/institutions.csv"
+    }
+}

@@ -1,0 +1,4 @@
+pdfminer.six
+pdfplumber
+PyPDF2
+pypdfium2
