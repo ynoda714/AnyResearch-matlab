@@ -153,6 +153,73 @@ Its purpose is to make recent architecture changes discoverable from markdown do
 - Exports `status="reviewed"` rows to EasyMolKit-ready Markdown
 - Generates DOI links and initial Tier values from `repro_signal_score`
 
+## Topicmap Example Functions
+
+These functions live under `examples/+topicmap/`. They are intentionally outside `src/` because they are post-pipeline examples, not product runtime logic.
+
+### `examples/+topicmap/setup.m`
+- Resolves the repository root and latest `search_results.jsonl`
+- Builds example-local output directories under `result/examples/topicmap/`
+- Centralizes standalone pipeline configuration
+
+### `examples/+topicmap/env_check.m`
+- Detects required toolboxes and BERT/UMAP prerequisites
+- Produces pipeline readiness flags and actionable warnings
+
+### `examples/+topicmap/read_search_results.m`
+- Reads AnyResearch `search_results.jsonl`
+- Normalizes rows into the example schema used by the topic-map pipeline
+- Tolerates missing abstracts and keeps title-only rows usable
+
+### `examples/+topicmap/extract_text.m`
+- Builds pipeline input text from normalized title/abstract fields
+- Avoids any legacy dependency on OpenAlex `abstract_inverted_index`
+
+### `examples/+topicmap/clean_text.m`
+- Applies lightweight text cleanup for tokenization and vectorization stages
+
+### `examples/+topicmap/build_term_matrix.m`
+- Builds bag-of-words style term matrices for cluster summaries
+- Supports stopword filtering and light plural normalization for `top_terms`
+
+### `examples/+topicmap/default_stopwords.m`
+- Returns the built-in English and academic stopword list used for cluster labels
+
+### `examples/+topicmap/compute_tfidf.m`
+- Computes TF-IDF weights for cluster-label scoring
+
+### `examples/+topicmap/embed_documents.m`
+- Creates BERT-Base embedding vectors for the topic-map pipeline
+- Handles support-package and GPU availability checks through the shared config path
+
+### `examples/+topicmap/reduce_layout.m`
+- Applies dimensionality reduction for both 5-D clustering space and 2-D plotting space
+
+### `examples/+topicmap/make_run_dir.m`
+- Creates bounded output directories under `result/examples/topicmap/`
+
+### `examples/+topicmap/summarize_clusters.m`
+- Builds cluster-level `top_terms` and `representative_titles`
+- Keeps stopword cleanup limited to label generation, not embeddings
+
+### `examples/+topicmap/plot_topic_map.m`
+- Draws a 2-D topic map PNG from reduced coordinates and cluster IDs
+
+### `examples/+topicmap/write_utf8_csv.m`
+- Writes UTF-8 BOM CSV files for Excel-safe output
+
+## Topicmap Example Entry Point
+
+### `examples/topic_map_pipeline.m`
+- Runs the single Phase Q topic-map flow end to end
+- Executes:
+  - `search_results.jsonl` ingestion
+  - BERT-Base embedding
+  - UMAP reduction to 5-D
+  - `kmeans` clustering on the 5-D coordinates
+  - UMAP reduction to 2-D
+  - CSV / PNG / run-meta output
+
 ## Runtime Artifact Model
 
 Current architecture is table-first internally:
@@ -207,9 +274,24 @@ That means the project is no longer CSV-first internally, even though CSV remain
 - DOI / OpenAlex ID normalization
 - `update_candidates_ledger` status validation
 
+### `test_topicmap_p0_smoke.m`
+- Covers direct JSONL ingestion and legacy-reference removal checks
+
+### `test_topicmap_p2_smoke.m`
+- Covers standalone config, dependency detection, and output-path confinement
+
+### `test_topicmap_helpers_smoke.m`
+- Covers helper-level text extraction, cleanup, and matrix-building paths
+- Verifies chapter utilities remain compatible with AnyResearch output rows
+
+### `test_topicmap_p3_smoke.m`
+- Covers chapter-script behavior and readiness/error handling
+- Verifies example entry points fail clearly when optional dependencies are absent
+
 ## Related Docs
 
 - [Quick Start](quickstart.md)
+- [Examples](examples.md)
 - [Benchmark Institutions Workflow](workflows/benchmark_institutions.md)
 - [Repro Discovery Workflow](workflows/repro_discovery.md)
 - [Changelog](../CHANGELOG.md)
