@@ -1,134 +1,64 @@
 # 変更履歴
 
-このファイルは、AnyResearch の主要な変更点を英語正本 `CHANGELOG.md` に対応させて日本語で補助説明するためのものです。  
-実装メモや詳細な開発履歴は、非公開の開発リポジトリで管理しています。
+このファイルは [CHANGELOG.md](../../CHANGELOG.md) の日本語ミラーです。
+詳細な実装履歴や開発メモは private な dev リポジトリ側で管理します。
 
-## 未リリース
+## Unreleased
 
-## 1.5.0 - 2026-07-18
+## 1.7.0 - 2026-07-20
+
+### 修正
+- OpenAlex の abstract 復元が、別論文の abstract を取り込むことがあった不具合を修正。
+  生 abstract を切り出す正規表現が LaTeX（例: `\frac{1}{2}`）を含む abstract で
+  途切れ、かつ結果を位置で対応付けていたため、1 件の失敗以降のすべてのレコードが
+  1 つ前の論文の abstract にずれていた。切り出しを波括弧の深さで判定し、
+  OpenAlex work id をキーに対応付けるよう変更したため、1 件の失敗が波及しなくなった。
+  - **推奨対応:** 過去のクエリを再実行すること。本修正より前に生成した
+    `search_results.jsonl` は abstract がずれている / アンダースコア化している
+    可能性があるため、再生成を推奨する。
 
 ### 追加
-- run 横断の候補台帳: 複数 run にまたがって候補論文を蓄積・重複排除・状態管理する
-  - `src/util/append_to_candidates.m` — run（または table）を台帳へ統合。
-    `doi_normalized` で重複排除し、無ければ `openalex_id` を使う
-  - `src/util/update_candidates_ledger.m` — 指定行の `status` / `note` を更新
-  - `src/export/export_candidates_xlsx.m` — 台帳の閲覧用スプレッドシート出力
-  - `src/export/export_candidates_md.m` — `status="reviewed"` 行の Markdown テーブル出力
-  - `test/smoke/test_candidates_ledger_smoke.m`
-- `main_run_pipeline.m` / `main_run_batch.m` の `appendToCandidates` オプション
-- `main_run_batch.m` の `ledgerPath` オプション。既定の台帳ではなく
-  専用ファイルへ蓄積できる
-- DOI・OpenAlex ID の正規化。DOI URL / `doi:` 接頭辞 / 素の DOI、および
-  OpenAlex ID の URL 形式・短縮形式が、すべて同一行として解決される
+- Phase Q topic-map pipeline 入口:
+  - `examples/topic_map_pipeline.m`
+- cluster summary / plot / UTF-8 CSV helper:
+  - `examples/+topicmap/summarize_clusters.m`
+  - `examples/+topicmap/plot_topic_map.m`
+  - `examples/+topicmap/write_utf8_csv.m`
+- `topic_map_run_meta.json`
 
 ### 変更
-- 台帳の追記エンジンをスキーマ非依存化。一致した行に既にある列は再追記でも保持され、
-  incoming 側が非空値を持つ場合だけ更新される。
-  **利用者が独自のレビュー列を台帳に足しても、後続 run で消えない**
-- ドキュメント構成: **英語を正本**とし既定パスに配置
-  （`README.md` / `docs/quickstart.md` / `docs/reference.md` / `docs/workflows/`）。
-  日本語は `docs/jp/` に同じ木構造でミラーする。
-  従来の `docs/en/` ディレクトリと `.ja.md` サフィックス方式を置き換える
-- `docs/workflows/repro_discovery.md` を候補台帳ベースの手順に更新
+- chapter ベースの topic-map examples を、単一の Phase Q pipeline に置き換え
+- `embed_documents.m` を `documentEmbedding` から `bert(Model="base")` ベースへ変更
+- `reduce_layout.m` を 5 次元 / 2 次元の両方に使える形へ変更
+- `docs/examples.md` / `docs/jp/examples.md` / `examples/README.md` を pipeline 構成へ更新
+- topic-map smoke test を chapter 前提から pipeline 前提へ更新
 
 ### 削除
-- 公開対象として意図していなかった旧パイプラインコード、ヘルパースクリプト、
-  および開発用のアドホックファイル
+- `examples/topic_map_ch00.m` 〜 `examples/topic_map_ch05.m`
+- `examples/+topicmap/project_map.m`
+- `examples/+topicmap/require_chapter.m`
+- `examples/+topicmap/run_hdbscan_cluster.m`
+- `examples/+topicmap/select_methods.m`
 
-### ドキュメント
-- `CHANGELOG.md` を正本として新設
-- 日本語補助ページ `docs/jp/CHANGELOG.md` を追加
-- 関数・テスト説明をまとめた `docs/reference.md` / `docs/jp/reference.md` を追加
-- README / quickstart / workflow 間の主要リンクを点検・修正
-
-## 1.4.0 - 2026-07-17
+## 1.6.0 - 2026-07-20
 
 ### 追加
-- OpenAlex への `citedByMin` / `citedByMax` サーバ側フィルタ
-- Overview への `fwci` / `citation_percentile` 表示
-- 再現性シグナル列:
-  - `mentions_dataset`
-  - `mentions_code`
-  - `mentions_library`
-  - `mentions_metrics`
-  - `repro_signal_score`
-- `config/repro_signals.example.json` による辞書差し替え
-- seed 論文からの 1-hop 引用探索:
-  - `fetch_citing_works.m`
-  - `fetch_referenced_works.m`
-  - `run_pipeline` の `seedId` / `snowballMode`
-- OpenAlex 利用量確認ヘルパー:
-  - `src/openalex/get_openalex_rate_limit_status.m`
+- `search_results.jsonl` を入力に使う `examples/` topic-map sample surface
+  - `examples/+topicmap/` helper 群
+  - `examples/topic_map_ch00.m` から `examples/topic_map_ch05.m`
+  - `examples/README.md`
+- topic-map 向け smoke test
+  - `test_topicmap_p0_smoke.m`
+  - `test_topicmap_p2_smoke.m`
+  - `test_topicmap_helpers_smoke.m`
+  - `test_topicmap_p3_smoke.m`
+- `docs/examples.md` / `docs/jp/examples.md`
 
 ### 変更
-- `citation_velocity.m` が `counts_by_year` を優先して実測ベースで計算
-- OpenAlex `429` / `503` 時の network smoke が `SKIP` / `WARN` に寄るよう整理
-- EasyMolKit 向け候補探索手順を `fwci` / `repro_signal_score` ベースに更新
+- public surface manifest に standalone topic-map example と smoke test を追加
+- `THIRD_PARTY_NOTICES.md` に UMAP / HDBSCAN など example 依存の notice を追加
+- README / quickstart から examples guide へのリンクを追加
 
 ### 修正
-- OpenAlex 429 時の待機戦略を改善
-- pipeline 経由 OpenAlex 呼び出しで API key をより確実に伝播
-
-## 1.3.0 - 2026-07-07
-
-### 追加
-- `run_pipeline(...).T`
-- `search_results.mat`
-- `load_run.m`
-- `load_latest_run.m`
-- `runDir/raw/` への生 OpenAlex JSON 保存
-
-### 変更
-- CSV リレー中心から、MATLAB table 中心の内部経路へ移行
-- JSONL を機械処理用の正本に統一
-- CSV / XLSX は派生ビュー化
-
-## 1.2.1 - 2026-07-17
-
-### 修正
-- OR 検索意味論の修正
-- 撤回論文の既定除外
-- review 済み institution ID の batch 実行時再解決を防止
-- Excel COM 書き込み経路の修正と回帰テスト追加
-
-## 1.2.0 - 2026-06-21
-
-### 追加
-- EasyMolKit 連携ワークフロー
-- quickstart / README へのケモインフォ探索例
-- RP 候補探索導線
-
-## 1.1.1 - 2026-04-03
-
-### 修正
-- `maxRowsForValidation` の既定値を無制限へ修正
-- PDF 無効時の downstream step を正しく `skipped` に修正
-- ゼロ件クエリを空成果物で正常終了
-- OpenAlex OR クエリ処理を修正
-
-## 1.1.0 - 2026-04
-
-### 追加
-- arXiv 補完取得
-- DOI ベース重複排除
-- `source_dataset` 列
-- `test_arxiv_smoke.m`
-
-## 1.0.0 - 2026-04
-
-### 追加
-- Analytics 層:
-  - citation velocity
-  - topic growth rate
-  - institution dominance
-- Summary / batch comparison 拡張
-- 公開リポジトリ向け整備
-
-## 0.1.0 - 2026-03
-
-### 追加
-- `main_run_pipeline.m` / `main_run_batch.m` の分離
-- `src/pipeline/run_pipeline.m` への集約
-- シート単位の Excel export モジュール化
-- smoke test 一括運用
-- logging helpers と統一 `run_meta.json`
+- 日本語 examples ページの公開リンク整合
+- examples 公開面に対する sync dry-run 検証

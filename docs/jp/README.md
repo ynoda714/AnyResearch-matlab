@@ -2,6 +2,8 @@
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=ynoda714/AnyResearch-matlab) &nbsp; [English](../../README.md)
 
+`search_results.jsonl` を使う standalone な後段 example は [docs/examples.md](../examples.md) にまとめています。これらは任意利用であり、コア製品パイプラインには含まれません。
+
 AnyResearch は、OpenAlex API を使って学術論文を収集し、MATLAB 上で構造化し、Excel に出力する検索パイプラインです。  
 キーワード検索だけで、研究動向の把握、文献レビュー、機関比較、再現候補探索に使える素材を作ることを目的としています。
 

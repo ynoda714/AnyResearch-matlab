@@ -116,9 +116,13 @@ while pageCount < effectiveMaxPages
         break;
     end
 
-    % Pre-extract all abstracts from raw JSON text to work around the issue where
-    % abstract_inverted_index keys are converted to MATLAB identifiers by jsondecode.
-    rawAbstractJsons = local_extract_raw_abstracts(rawPageJson);
+    % Pre-extract raw abstract JSON per work id to avoid jsondecode identifier conversion
+    % and to keep abstracts aligned even when one raw extraction fails.
+    rawAbstractEntries = extract_openalex_raw_abstracts(rawPageJson);
+    rawAbstractMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    for rawIdx = 1:numel(rawAbstractEntries)
+        rawAbstractMap(char(rawAbstractEntries(rawIdx).openalex_id)) = rawAbstractEntries(rawIdx).raw_abstract_json;
+    end
 
     results = response.results;
     keptInPage = 0;
@@ -152,10 +156,18 @@ while pageCount < effectiveMaxPages
         bestOaPdfUrl = local_get_best_oa_pdf_url(w);
         licenseVal = local_get_best_oa_license(w);
         referencedWorksCount = local_get_numeric(w, 'referenced_works_count');
-        if i <= numel(rawAbstractJsons) && rawAbstractJsons{i} ~= ""
-            abstractText = local_parse_inverted_index_json(rawAbstractJsons{i});
-        else
-            abstractText = local_reconstruct_abstract(w);  % fallback: via jsondecode (with identifier conversion)
+        abstractText = "";
+        if openalexId ~= "" && isKey(rawAbstractMap, char(openalexId))
+            rawAbstractJson = string(rawAbstractMap(char(openalexId)));
+            if rawAbstractJson ~= ""
+                abstractText = parse_openalex_inverted_index_json(rawAbstractJson);
+            end
+        end
+        if abstractText == ""
+            % Fail-safe: if raw extraction is missing or parsing yields no tokens,
+            % fall back to the jsondecode-based reconstruction rather than silently
+            % returning an empty abstract.
+            abstractText = local_reconstruct_abstract(w);
         end
         isOa = local_get_is_oa(w);
         typeVal = local_get_field(w, 'type');
@@ -533,103 +545,6 @@ for k = 1:numel(targets)
         return;
     end
 end
-end
-
-function rawList = local_extract_raw_abstracts(rawPageJson)
-% Extracts all abstract_inverted_index JSON object strings from the results array
-% in rawPageJson (char|string), in order. Returns "" for works where the value is null.
-% Each element corresponds to results(i).
-rawStr = char(rawPageJson);
-
-% Detect all occurrences of "abstract_inverted_index": {...} or "abstract_inverted_index": null
-% The value is a flat structure with "word": [int, ...] only, so no nested braces appear.
-% { appears only once -> [^{}]* safely matches the entire object
-[toks] = regexp(rawStr, ...
-    '"abstract_inverted_index"\s*:\s*(null|\{[^{}]*\})', ...
-    'tokens');
-
-rawList = cell(numel(toks), 1);
-for k = 1:numel(toks)
-    val = string(toks{k}{1});
-    if val == "null"
-        rawList{k} = "";
-    else
-        rawList{k} = val;
-    end
-end
-end
-
-function abstractText = local_parse_inverted_index_json(absJson)
-% absJson: JSON string in format '{"word1":[0,3],"word2":[1],...}'
-% Returns words sorted by position and joined with spaces.
-% Does not use jsondecode, so no MATLAB identifier conversion occurs.
-abstractText = "";
-if isempty(absJson) || absJson == "" || absJson == "{}"
-    return;
-end
-
-rawStr = char(absJson);
-
-% Extract all "key": [pos1, pos2, ...] pairs
-% Key: JSON string (may include backslash escapes)
-% Value: integer array
-[~, kv] = regexp(rawStr, ...
-    '"((?:[^"\\]|\\.)*)"\s*:\s*\[([^\]]*)\]', ...
-    'match', 'tokens');
-
-if isempty(kv)
-    return;
-end
-
-% Find the maximum position
-maxPos = 0;
-for k = 1:numel(kv)
-    posStr = strtrim(kv{k}{2});
-    if isempty(posStr)
-        continue;
-    end
-    nums = str2double(strsplit(posStr, ','));
-    nums = nums(~isnan(nums) & nums >= 0);
-    if ~isempty(nums)
-        maxPos = max(maxPos, max(nums));
-    end
-end
-
-if maxPos < 0
-    return;
-end
-
-% Build token array
-tokenArr = repmat({""}, maxPos + 2, 1);
-for k = 1:numel(kv)
-    word = kv{k}{1};
-    % Decode JSON string escapes
-    % Process \uXXXX Unicode escapes first (must be done before \\)
-    % (?<!\\) prevents converting \uXXXX preceded by \\ (escaped backslash + text)
-    word = regexprep(word, '(?<!\\)\\u([0-9a-fA-F]{4})', '${char(hex2dec($1))}');
-    word = strrep(word, '\"', '"');
-    word = strrep(word, '\\', '\');
-    word = strrep(word, '\/', '/');
-    word = regexprep(word, '\\[nt]', ' ');
-
-    posStr = strtrim(kv{k}{2});
-    if isempty(posStr)
-        continue;
-    end
-    nums = str2double(strsplit(posStr, ','));
-    for j = 1:numel(nums)
-        p = nums(j);
-        if ~isnan(p) && p >= 0
-            idx = p + 1;
-            if idx <= numel(tokenArr)
-                tokenArr{idx} = word;
-            end
-        end
-    end
-end
-
-nonEmpty = tokenArr(~strcmp(tokenArr, ""));
-abstractText = strtrim(strjoin(string(nonEmpty), " "));
 end
 
 function rawJson = local_webread_with_retry(url, timeoutSec)

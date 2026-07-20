@@ -8,9 +8,9 @@
 %% 0) Parameters (edit here only)
 
 % ── Layer 0: Search query (required) ────────────────────────────────
-query    = "machine learning";
-fromDate = "2025-01-01";
-toDate   = "2025-03-31";
+query    = "MATLAB";
+fromDate = "2026-01-01";
+toDate   = "2026-07-18";
 % Query syntax:
 %   AND : separate with spaces  e.g. "deep learning classification"
 %   OR  : use |                 e.g. "solar|wind energy"

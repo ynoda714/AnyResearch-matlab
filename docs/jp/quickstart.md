@@ -2,6 +2,8 @@
 
 &nbsp; [English](../quickstart.md)
 
+`search_results.jsonl` を使う standalone example については [Examples](examples.md) を参照してください。これらはコア製品パイプラインのサポート対象外です。
+
 > 最終更新: 2026-07-17
 
 ---
@@ -117,17 +119,17 @@ result/runs/<YYYYMMDD_HHMMSS>/
 ```csv
 Account,openalex_institution_id
 Nagoya University,I1234567890
-Fujita Health University,I145673806
-Fujita Health University,I4210124875
+Example Medical University,I100000001
+Example Medical University,I100000002
 ```
 
 ### 4.2 reviewed v2 形式
 
 ```csv
 account,openalex_institution_id,display_name,include,role,note
-Fujita Health University,I145673806,Fujita Health University,1,main,
-Fujita Health University,I4210124875,Fujita Health University Hospital,1,hospital,
-Fujita Health University,I9999999999,Old Candidate,0,other,excluded after review
+Example Medical University,I100000001,Example Medical University,1,main,
+Example Medical University,I100000002,Example Medical University Hospital,1,hospital,
+Example Medical University,I9999999999,Old Candidate,0,other,excluded after review
 ```
 
 ルール:

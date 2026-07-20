@@ -9,6 +9,79 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-07-20
+
+### Fixed
+- OpenAlex abstract reconstruction could attach the wrong paper's abstract.
+  The raw abstract extractor used a regular expression that broke on abstracts
+  containing LaTeX (e.g. `\frac{1}{2}`), and because results were matched by
+  position, a single failure shifted every following record onto the previous
+  paper's abstract. Extraction is now brace-depth aware and keyed by OpenAlex
+  work id, so one failure no longer cascades.
+  - **Action recommended:** re-run past queries. Existing
+    `search_results.jsonl` produced before this fix may contain mismatched or
+    underscore-mangled abstracts and should be regenerated.
+
+### Added
+- Phase Q topic-map pipeline entry point:
+  - `examples/topic_map_pipeline.m`
+- Cluster-summary and plotting helpers:
+  - `examples/+topicmap/summarize_clusters.m`
+  - `examples/+topicmap/plot_topic_map.m`
+  - `examples/+topicmap/write_utf8_csv.m`
+- Topic-map run metadata output:
+  - `topic_map_run_meta.json`
+
+### Changed
+- Replaced the chapter-based topic-map examples with a single Phase Q pipeline:
+  - `search_results.jsonl`
+  - `BERT-Base 768-D embeddings`
+  - `UMAP -> 5D`
+  - `k-means on the 5-D coordinates`
+  - `UMAP -> 2D`
+  - `PNG map + cluster summary CSV`
+- `examples/+topicmap/embed_documents.m` now uses `bert(Model="base")` instead of `documentEmbedding`
+- `examples/+topicmap/reduce_layout.m` now supports explicit target dimensions for both 5-D and 2-D outputs
+- `docs/examples.md` and `examples/README.md` now document the single-pipeline Phase Q flow instead of the deleted chapter layout
+- Topic-map smoke tests now validate the pipeline surface and synthetic cluster outputs instead of chapter scripts
+
+### Removed
+- Legacy chapter scripts:
+  - `examples/topic_map_ch00.m`
+  - `examples/topic_map_ch01.m`
+  - `examples/topic_map_ch02.m`
+  - `examples/topic_map_ch03.m`
+  - `examples/topic_map_ch04.m`
+  - `examples/topic_map_ch05.m`
+- Legacy example-only helpers tied to the old chapter model:
+  - `examples/+topicmap/project_map.m`
+  - `examples/+topicmap/require_chapter.m`
+  - `examples/+topicmap/run_hdbscan_cluster.m`
+  - `examples/+topicmap/select_methods.m`
+
+## [1.6.0] - 2026-07-20
+
+### Added
+- Public `examples/` topic-map sample area built on `search_results.jsonl`
+  - `examples/+topicmap/` helper functions for standalone ingestion, text preparation, layout, embedding, and clustering
+  - `examples/topic_map_ch00.m` through `examples/topic_map_ch05.m`
+  - `examples/README.md`
+- Topic-map smoke coverage:
+  - `test_topicmap_p0_smoke.m`
+  - `test_topicmap_p2_smoke.m`
+  - `test_topicmap_helpers_smoke.m`
+  - `test_topicmap_p3_smoke.m`
+- `docs/examples.md` and `docs/jp/examples.md` for example usage boundary, toolbox requirements, and sample JSONL generation
+
+### Changed
+- Public-surface manifest now includes the standalone topic-map examples and their smoke tests
+- `THIRD_PARTY_NOTICES.md` now documents example-only dependencies such as UMAP and HDBSCAN add-ons
+- README and quickstart docs now link to the examples guide while keeping examples clearly outside the core product pipeline
+
+### Fixed
+- Public link containment for the new Japanese examples page
+- Public sync dry-run verification for the examples surface
+
 ## [1.5.0] - 2026-07-18
 
 ### Added

@@ -8,6 +8,8 @@
 
 ## Prerequisites
 
+Optional standalone examples that consume `search_results.jsonl` are documented in [examples.md](examples.md). They are not part of the supported core pipeline.
+
 Layer 0 (Core) alone covers the primary use case. Add Layer 1, 2 or 3 only when needed.
 
 | Item | Layer | Required/Optional | Notes |
@@ -127,17 +129,17 @@ The batch loader accepts both of the following formats.
 ```csv
 Account,openalex_institution_id
 Nagoya University,I1234567890
-Fujita Health University,I145673806
-Fujita Health University,I4210124875
+Example Medical University,I100000001
+Example Medical University,I100000002
 ```
 
 2. Reviewed v2 format (recommended)
 
 ```csv
 account,openalex_institution_id,display_name,include,role,note
-Fujita Health University,I145673806,Fujita Health University,1,main,
-Fujita Health University,I4210124875,Fujita Health University Hospital,1,hospital,
-Fujita Health University,I9999999999,Old Candidate,0,other,excluded after review
+Example Medical University,I100000001,Example Medical University,1,main,
+Example Medical University,I100000002,Example Medical University Hospital,1,hospital,
+Example Medical University,I9999999999,Old Candidate,0,other,excluded after review
 ```
 
 Rules:

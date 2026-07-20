@@ -23,8 +23,8 @@
 ```csv
 Account,openalex_institution_id
 Nagoya University,I1234567890
-Fujita Health University,I145673806
-Fujita Health University,I4210124875
+Example Medical University,I100000001
+Example Medical University,I100000002
 ```
 
 ### 2. reviewed v2 形式
@@ -33,9 +33,9 @@ Fujita Health University,I4210124875
 
 ```csv
 account,openalex_institution_id,display_name,country_code,works_count,include,role,note,status
-Fujita Health University,I145673806,Fujita Health University,JP,12345,1,main,,found
-Fujita Health University,I4210124875,Fujita Health University Hospital,JP,6789,1,hospital,,found
-Fujita Health University,I9999999999,Old Candidate,JP,50,0,other,excluded after review,found
+Example Medical University,I100000001,Example Medical University,JP,12345,1,main,,found
+Example Medical University,I100000002,Example Medical University Hospital,JP,6789,1,hospital,,found
+Example Medical University,I9999999999,Old Candidate,JP,50,0,other,excluded after review,found
 ```
 
 列の意味:

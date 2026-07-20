@@ -32,6 +32,8 @@ AnyResearch is designed as four incremental layers. **Layer 0 alone covers the p
 
 ## Quick Start
 
+Standalone downstream examples built on `search_results.jsonl` are documented in [docs/examples.md](docs/examples.md). They are optional and not part of the core product pipeline.
+
 ### 1. Set an OpenAlex API Key
 
 1. Create a free account at [openalex.org](https://openalex.org/)

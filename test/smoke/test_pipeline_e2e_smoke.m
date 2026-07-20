@@ -16,7 +16,8 @@
 %     T6. First JSONL record has required fields such as title / abstract / publication_year
 %     T7. normalized works CSV row count matches JSONL, and required columns exist
 %     T8. OpenAlex raw page JSON is saved under the specified raw directory
-%     T9. run_pipeline returns result.T and load_run reproduces the same row count
+%     T9. saved OpenAlex abstracts match raw-page reconstruction (mismatch=0)
+%     T10. run_pipeline returns result.T and load_run reproduces the same row count
 %
 %   Note: Requires network connection and a valid settings.json (openalex.api_key).
 %         All API-dependent tests are skipped when offline or API key is not configured.
@@ -60,9 +61,9 @@ passCount = 0;
 settingsPath = fullfile(tmpDir, 'e2e_settings.json');
 local_write_e2e_settings(settingsPath, apiKey);
 
-rawCsvPath = fullfile(tmpDir, 'openalex_raw.csv');
 normalizedWorksCsvPath = fullfile(tmpDir, 'normalized_works.csv');
 rawResponseDir = fullfile(tmpDir, 'raw');
+rawCsvPath = fullfile(rawResponseDir, 'openalex_raw.csv');
 
 %% API call
 try
@@ -176,8 +177,21 @@ assert(startsWith(rawText, "{"), 'T8: raw JSON の先頭が "{" でない');
 assert(contains(rawText, '"results"'), 'T8: raw JSON に results が含まれない');
 fprintf(' PASS\n'); passCount = passCount + 1;
 
-%% T9: run_pipeline returns result.T and load_run can restore it
-fprintf('[T9] run_pipeline result.T / load_run ...');
+%% T9: saved raw JSONL matches raw-page reconstruction
+fprintf('[T9] saved abstract / raw-page 再構成整合 ...');
+auditRes = audit_openalex_saved_abstracts(rawResponseDir);
+assert(auditRes.saved_rows == double(apiRes.rows), ...
+    sprintf('T9: saved_rows=%d apiRes.rows=%d mismatch', ...
+    double(auditRes.saved_rows), double(apiRes.rows)));
+assert(auditRes.rebuilt_rows >= double(auditRes.saved_rows), ...
+    sprintf('T9: rebuilt_rows=%d saved_rows=%d mismatch', ...
+    double(auditRes.rebuilt_rows), double(auditRes.saved_rows)));
+assert(auditRes.mismatch_count == 0, ...
+    sprintf('T9: mismatch_count=%d (expected 0)', double(auditRes.mismatch_count)));
+fprintf(' PASS\n'); passCount = passCount + 1;
+
+%% T10: run_pipeline returns result.T and load_run can restore it
+fprintf('[T10] run_pipeline result.T / load_run ...');
 pipelineRoot = fullfile(tmpDir, 'runs');
 r = run_pipeline("matlab openaccess", "2025-01-01", "2025-03-31", ...
     language="en", requireOpenAccess=true, maxPages=1, candidateMaxPages=1, ...
@@ -190,8 +204,8 @@ T_loaded = load_run(r.run_dir);
 assert(height(T_loaded) == height(r.T), 'T9: load_run row count mismatch');
 fprintf(' PASS\n'); passCount = passCount + 1;
 
-fprintf('\n=== test_pipeline_e2e_smoke: %d/9 PASSED ===\n\n', passCount);
-assert(passCount == 9, sprintf('FAILED: %d/9 テストが失敗しました', 9 - passCount));
+fprintf('\n=== test_pipeline_e2e_smoke: %d/10 PASSED ===\n\n', passCount);
+assert(passCount == 10, sprintf('FAILED: %d/10 テストが失敗しました', 10 - passCount));
 end
 
 %% ─── Local helpers ───────────────────────────────────────────────────

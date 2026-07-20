@@ -22,8 +22,8 @@ Supported for backward compatibility.
 ```csv
 Account,openalex_institution_id
 Nagoya University,I1234567890
-Fujita Health University,I145673806
-Fujita Health University,I4210124875
+Example Medical University,I100000001
+Example Medical University,I100000002
 ```
 
 ### 2. Reviewed v2 format
@@ -32,9 +32,9 @@ Recommended going forward because it preserves manual review decisions as data.
 
 ```csv
 account,openalex_institution_id,display_name,country_code,works_count,include,role,note,status
-Fujita Health University,I145673806,Fujita Health University,JP,12345,1,main,,found
-Fujita Health University,I4210124875,Fujita Health University Hospital,JP,6789,1,hospital,,found
-Fujita Health University,I9999999999,Old Candidate,JP,50,0,other,excluded after review,found
+Example Medical University,I100000001,Example Medical University,JP,12345,1,main,,found
+Example Medical University,I100000002,Example Medical University Hospital,JP,6789,1,hospital,,found
+Example Medical University,I9999999999,Old Candidate,JP,50,0,other,excluded after review,found
 ```
 
 Column meanings:
@@ -110,7 +110,7 @@ load_institutions_list("data/list/institutions.csv")
 - all `include=1` rows with the same `account` are grouped into one target
 - the target's IDs are joined as `I1|I2|...` and passed to `run_pipeline`
 - `resolveInstitutionIds=false` is forced so that reviewed IDs in the CSV are not re-resolved at run time
-- `batch_summary.csv.openalex_institution_id` stores joined IDs such as `I145673806|I4210124875`
+- `batch_summary.csv.openalex_institution_id` stores joined IDs such as `I100000001|I100000002`
 - `result/batch/<timestamp>/runs/` now maps to one run per target, not one run per CSV row
 
 ## Tests
