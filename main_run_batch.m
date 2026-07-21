@@ -5,15 +5,18 @@
 % Usage:
 %   1. Edit parameters in Section 0.
 %   2. If you need to refresh the institution list, set prepareList=true and run Section 0.5.
-%   3. Review include/role/note in institutions_candidate.csv or institutions.csv.
-%   4. Run Section 1 with "Run Section" (Ctrl+Enter).
+%   3. Review include/role/note in institutions_candidate.csv.
+%   4. Set promoteReviewed=true and run Section 0.6 to copy the reviewed list to institutions.csv.
+%   5. Run Section 1 with "Run Section" (Ctrl+Enter).
 
 %% 0) Parameters (edit here only)
 
 % Input / output
 institutionsCsv       = "data/list/institutions.csv";
+candidateCsv          = "data/list/institutions_candidate.csv";
 batchRootDir          = "result/batch";
 prepareList           = false;   % true = run Section 0.5 to refresh candidate CSV
+promoteReviewed       = false;   % true = run Section 0.6 to promote reviewed candidates to institutions.csv
 dryRun                = false;   % true = preview filters and counts only, no full fetch
 targetNames           = ["Nagoya University", "Example Medical University"];
 prepareCountryFilter  = "JP";
@@ -58,9 +61,21 @@ if prepareList
     addpath(fullfile(thisDir, 'src', 'config'));
     addpath(fullfile(thisDir, 'src', 'util'));
     prepare_institutions_csv(targetNames, ...
+        outputPath=candidateCsv, ...
         countryFilter=prepareCountryFilter, ...
         maxCandidates=prepareMaxCandidates, ...
         mergeWith=institutionsCsv);
+end
+
+%% 0.6) Promote reviewed candidate list (run only when promoteReviewed = true)
+if promoteReviewed
+    thisDir = fileparts(mfilename('fullpath'));
+    if ~isfolder(fullfile(thisDir, 'src')), thisDir = pwd; end   % Run Section / unsaved buffer: mfilename is a temp path, use Current Folder
+    assert(isfolder(fullfile(thisDir, 'src')), 'AnyResearch:BadRoot', ...
+        'Set the MATLAB Current Folder to the AnyResearch repo root (the folder with main_run_batch.m and src/), then run again.');
+    addpath(fullfile(thisDir, 'src', 'openalex'));
+    addpath(fullfile(thisDir, 'src', 'util'));
+    promote_reviewed_institutions_csv(candidateCsv, institutionsCsv);
 end
 
 %% 1) Run (do not edit)

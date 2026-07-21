@@ -7,6 +7,23 @@
 
 ## Unreleased
 
+## 1.10.0 - 2026-07-21
+
+### 追加
+- `main_run_batch.m` に Section 0.6 を追加。レビュー済みの
+  `data/list/institutions_candidate.csv` を `data/list/institutions.csv` へ
+  昇格できるようにした。既存の本番リストは上書き前に
+  `institutions.csv.bak.<timestamp>` としてバックアップされる。
+- `promote_reviewed_institutions_csv.m` と、コピー元欠落・新規コピー・
+  バックアップ（既存ファイルが空の場合を含む）・同一パス拒否を確認する
+  offline smoke test を追加。
+
+### 変更
+- `prepare_institutions_csv` の完了メッセージで、候補レビュー後に
+  Section 0.6 で昇格する導線を案内するようにした。
+- ベンチマーク機関ワークフローに、候補レビュー→昇格→本実行の流れと、
+  同名別機関の副次ヒットに対する注意を追記。
+
 ## 1.9.2 - 2026-07-21
 
 ### 修正

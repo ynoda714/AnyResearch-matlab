@@ -227,8 +227,10 @@ fprintf('\nNext steps:\n');
 fprintf('  1. Open %s and review candidates\n', outPath);
 fprintf('  2. Set include to 1/0 for each candidate you want to keep or skip\n');
 fprintf('  3. Optionally adjust role / note after review\n');
-fprintf('  4. Validate with load_institutions_list(''%s'')\n', outPath);
-fprintf('  5. Run main_run_batch.m with the reviewed institutions.csv\n\n');
+fprintf('  4. In main_run_batch.m, set promoteReviewed=true and run Section 0.6\n');
+fprintf('     (or save the reviewed file as data/list/institutions.csv manually)\n');
+fprintf('  5. Validate with load_institutions_list(''data/list/institutions.csv'')\n');
+fprintf('  6. Run main_run_batch.m with the reviewed institutions.csv\n\n');
 
 if nargout == 0
     clear outPath outTable;

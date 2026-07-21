@@ -2,7 +2,7 @@
 
 &nbsp; [日本語](../jp/workflows/benchmark_institutions.md)
 
-> Updated: 2026-07-17
+> Updated: 2026-07-21
 
 ## Purpose
 
@@ -83,15 +83,39 @@ With `mergeWith`:
 - new IDs under an existing account are appended with `include=0` and note `new candidate since <date>`
 - IDs that disappear from the API result are kept and annotated with `not returned by API on <date>`
 
-## Review step
+## Review and promote the candidate list
 
-Open the candidate CSV and review at least:
+Open `data/list/institutions_candidate.csv` and review at least:
 
 - set `include=1` for candidates to keep, `0` for candidates to skip
 - record why multiple IDs are retained in `role` if helpful
 - record rationale or pending questions in `note`
 
-No column renaming is required. The file can be used directly as `institutions.csv`.
+Candidate search can return secondary name matches. For example, a search for
+`Nagoya University` may also surface a separate institution such as
+`Nagoya City University`. Use `display_name`, `country_code`, and `works_count`
+to decide which rows belong to the intended benchmark target.
+
+After review, promote the candidate file to the production batch input from
+`main_run_batch.m`:
+
+```matlab
+prepareList = false;
+promoteReviewed = true;
+```
+
+Then run Section 0.6. This copies `data/list/institutions_candidate.csv` to
+`data/list/institutions.csv`. If `institutions.csv` already exists, it is first
+backed up as `institutions.csv.bak.<timestamp>`.
+
+The intended workflow is:
+
+1. Set `prepareList=true` and run Section 0.5 to generate `institutions_candidate.csv`
+2. Review `include` / `role` / `note` in `institutions_candidate.csv`
+3. Set `promoteReviewed=true` and run Section 0.6 to promote it to `institutions.csv`
+4. Set both flags back to `false`, then run Section 1
+
+No column renaming is required.
 
 ## Input validation
 

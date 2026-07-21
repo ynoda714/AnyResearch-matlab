@@ -11,6 +11,24 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-07-21
+
+### Added
+- Section 0.6 in `main_run_batch.m` for promoting a reviewed
+  `data/list/institutions_candidate.csv` to `data/list/institutions.csv`.
+  Existing production lists are backed up as
+  `institutions.csv.bak.<timestamp>` before overwrite.
+- `promote_reviewed_institutions_csv.m` and offline smoke coverage for the
+  missing-source, new-target, backup (including an empty existing target), and
+  same-path cases.
+
+### Changed
+- `prepare_institutions_csv` now points users to the Section 0.6 promotion
+  flow after candidate review.
+- The benchmark-institutions workflow docs now describe the
+  candidate-review-promotion-run sequence and warn about secondary institution
+  name matches.
+
 ## [1.9.2] - 2026-07-21
 
 ### Fixed

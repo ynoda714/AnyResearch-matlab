@@ -2,7 +2,7 @@
 
 &nbsp; [English](../../workflows/benchmark_institutions.md)
 
-> 更新日: 2026-07-17
+> 更新日: 2026-07-21
 
 ## 目的
 
@@ -84,16 +84,37 @@ prepare_institutions_csv(["Example Research University", "Example Technical Univ
 - 既存 account に新しく現れた ID は `include=0` で追加され、`note` に `new candidate since <date>` を付与
 - API に出なくなった既存 ID は削除せず残し、`note` に `not returned by API on <date>` を追記
 
-## 目視レビュー
+## 目視レビューと本番CSVへの昇格
 
-候補CSVを開き、少なくとも以下を確認する。
+`data/list/institutions_candidate.csv` を開き、少なくとも以下を確認する。
 
 - 採用する行の `include` を `1`、除外する行を `0`
 - 複数 ID を残す理由があれば `role` に記録
 - 判断根拠や保留事項があれば `note` に記録
 
+候補検索では同名別機関の副次ヒットが混じることがある。
+例えば `Nagoya University` の検索で、別機関である `Nagoya City University` が候補に出る場合がある。
+`display_name` / `country_code` / `works_count` を見て、目的のベンチマーク対象に含める行だけを採用する。
+
+レビュー後、`main_run_batch.m` から候補CSVを本番入力へ昇格する。
+
+```matlab
+prepareList = false;
+promoteReviewed = true;
+```
+
+この状態で Section 0.6 を実行すると、`data/list/institutions_candidate.csv` が
+`data/list/institutions.csv` にコピーされる。既存の `institutions.csv` がある場合は、
+先に `institutions.csv.bak.<timestamp>` としてバックアップされる。
+
+想定フローは次の 4 ステップ。
+
+1. `prepareList=true` にして Section 0.5 を実行し、`institutions_candidate.csv` を生成する
+2. `institutions_candidate.csv` の `include` / `role` / `note` を目視レビューする
+3. `promoteReviewed=true` にして Section 0.6 を実行し、`institutions.csv` へ昇格する
+4. 両方のフラグを `false` に戻して Section 1 を実行する
+
 列名の変更は不要。
-そのまま `institutions.csv` として `main_run_batch.m` に渡せる。
 
 ## 実行前検証
 
