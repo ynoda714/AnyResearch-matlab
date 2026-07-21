@@ -7,7 +7,7 @@
 %   Usage:
 %     lookup_institution_id("Nagoya University")
 %     lookup_institution_id("Tokyo", maxResults=20)
-%     results = lookup_institution_id("Fujita")
+%     results = lookup_institution_id("Example Medical")
 %
 %   [Required arguments]
 %     nameQuery : Institution name to search (partial match; OpenAlex full-text search)

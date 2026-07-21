@@ -15,7 +15,7 @@ institutionsCsv       = "data/list/institutions.csv";
 batchRootDir          = "result/batch";
 prepareList           = false;   % true = run Section 0.5 to refresh candidate CSV
 dryRun                = false;   % true = preview filters and counts only, no full fetch
-targetNames           = ["Nagoya University", "Fujita Health University"];
+targetNames           = ["Nagoya University", "Example Medical University"];
 prepareCountryFilter  = "JP";
 prepareMaxCandidates  = 3;
 

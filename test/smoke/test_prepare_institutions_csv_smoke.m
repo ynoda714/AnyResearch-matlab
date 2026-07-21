@@ -225,13 +225,13 @@ fprintf('[T10] prepare_institutions_csv mergeWith writes preserved review fields
 mergePath10 = fullfile(tempdir, 'test_prepare_institutions_merge_existing.csv');
 outCsv10 = fullfile(tempdir, 'test_prepare_institutions_T10.csv');
 existing10 = table( ...
-    "Nagoya University", "I145673806", "Old Name", "JP", 1, "1", "primary", "keep reviewed", "found", ...
+    "Nagoya University", "I100000001", "Old Name", "JP", 1, "1", "primary", "keep reviewed", "found", ...
     'VariableNames', expectedCols);
 writetable(existing10, mergePath10);
 try
     [~, T10] = prepare_institutions_csv(["Nagoya University"], ...
         outputPath=outCsv10, maxCandidates=1, mergeWith=mergePath10);
-    row10 = T10(T10.account == "Nagoya University" & T10.openalex_institution_id == "I145673806", :);
+    row10 = T10(T10.account == "Nagoya University" & T10.openalex_institution_id == "I100000001", :);
     assert(height(row10) <= 1, 'T10: duplicate merged row found');
     if height(row10) == 1
         assert(row10.include == 1, 'T10: include not preserved');

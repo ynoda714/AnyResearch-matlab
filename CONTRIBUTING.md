@@ -4,7 +4,7 @@ Thank you for your interest in AnyResearch!
 
 ## Reporting Bugs
 
-Please [open an issue](../../issues/new) and include:
+Please [open an issue](https://github.com/ynoda714/AnyResearch-matlab/issues/new) and include:
 
 - MATLAB version (e.g., R2025b)
 - Operating system

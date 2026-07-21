@@ -11,6 +11,22 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-07-21
+
+### Added
+- Public-surface gate coverage for MATLAB dependency closure and published-doc
+  link health, including required EN↔JP mirror header links.
+- `data/sample/institutions_sample.csv` — a copy-ready Layer 1 batch input with
+  fictional placeholder institutions. It is the single intentional CSV exception
+  to the "CSV is not tracked" policy (see `.gitignore` and AGENTS.md).
+
+### Changed
+- Institution examples in public docs now use fictional placeholder names
+  consistently instead of real universities.
+- Front-end default target list and smoke-test fixtures now use placeholder
+  institutions and IDs instead of a real institution, so no real target appears
+  in the published sources.
+
 ## [1.8.0] - 2026-07-21
 
 ### Fixed

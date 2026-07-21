@@ -5,6 +5,9 @@ result/**
 # Data artifacts
 *.csv
 *.xlsx
+# Intentional exception: one fictional sample so the batch (Layer 1) CSV format
+# is copyable from the public repo. Contains no real institution data.
+!data/sample/institutions_sample.csv
 
 # Python
 venv/

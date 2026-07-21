@@ -1,0 +1,6 @@
+account,openalex_institution_id,display_name,include,role,note
+Example Medical University,I100000001,Example Medical University,1,main,
+Example Medical University,I100000002,Example Medical University Hospital,1,hospital,
+Example Medical University,I100000009,Old Candidate,0,other,excluded after review
+Example Research University,I100000010,Example Research University,1,main,
+Example Technical University,I100000020,Example Technical University,1,main,

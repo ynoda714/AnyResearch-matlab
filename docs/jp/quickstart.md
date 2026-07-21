@@ -118,7 +118,7 @@ result/runs/<YYYYMMDD_HHMMSS>/
 
 ```csv
 Account,openalex_institution_id
-Nagoya University,I1234567890
+Example Research University,I1234567890
 Example Medical University,I100000001
 Example Medical University,I100000002
 ```

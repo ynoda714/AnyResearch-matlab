@@ -1,4 +1,4 @@
-# AnyResearch
+﻿# AnyResearch
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=ynoda714/AnyResearch-matlab) &nbsp; [日本語](docs/jp/README.md)
 
@@ -96,12 +96,12 @@ Process multiple universities or organizations in one run and generate cross-ins
 **Step 1: Generate an institution candidate CSV**
 
 ```matlab
-prepare_institutions_csv(["Nagoya University", "Kyoto University", "Osaka University"], ...
+prepare_institutions_csv(["Example Research University", "Example Technical University", "Example Metropolitan University"], ...
     countryFilter="JP", maxCandidates=3)
 % -> Outputs reviewed-v2 candidates to data/list/institutions_candidate.csv
 % -> Review include / role / note and use it as institutions.csv
 
-lookup_institution_id("Nagoya University")
+lookup_institution_id("Example Research University")
 ```
 
 `institutions_candidate.csv` already uses the reviewed batch schema. No manual column renaming is required.  
@@ -199,3 +199,4 @@ Detailed internal project rules and phase-by-phase planning remain in the privat
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+

@@ -18,13 +18,17 @@
 
 ## `institutions.csv` の受け入れ形式
 
+架空プレースホルダ機関のコピー用サンプルを
+[`data/sample/institutions_sample.csv`](../../../data/sample/institutions_sample.csv) に用意している。
+プレースホルダを自分のターゲットに置き換え、`data/list/institutions.csv` として保存する。
+
 ### 1. 旧 2 列形式
 
 後方互換のため読み込み可能。
 
 ```csv
 Account,openalex_institution_id
-Nagoya University,I1234567890
+Example Research University,I1234567890
 Example Medical University,I100000001
 Example Medical University,I100000002
 ```
@@ -56,7 +60,7 @@ Example Medical University,I9999999999,Old Candidate,JP,50,0,other,excluded afte
 ### 新規作成
 
 ```matlab
-prepare_institutions_csv(["Nagoya University", "Kyoto University", "Osaka University"], ...
+prepare_institutions_csv(["Example Research University", "Example Technical University", "Example Metropolitan University"], ...
     countryFilter="JP", maxCandidates=3)
 ```
 
@@ -69,7 +73,7 @@ prepare_institutions_csv(["Nagoya University", "Kyoto University", "Osaka Univer
 ### 既存レビューの保持つき再生成
 
 ```matlab
-prepare_institutions_csv(["Nagoya University", "Kyoto University"], ...
+prepare_institutions_csv(["Example Research University", "Example Technical University"], ...
     countryFilter="JP", ...
     mergeWith="data/list/institutions.csv")
 ```

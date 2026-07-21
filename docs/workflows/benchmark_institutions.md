@@ -17,13 +17,17 @@ This document describes the current multi-institution benchmarking workflow arou
 
 ## Accepted `institutions.csv` formats
 
+A ready-to-copy sample with fictional placeholder institutions lives at
+[`data/sample/institutions_sample.csv`](../../data/sample/institutions_sample.csv).
+Replace the placeholders with your own targets and save it as `data/list/institutions.csv`.
+
 ### 1. Legacy 2-column format
 
 Supported for backward compatibility.
 
 ```csv
 Account,openalex_institution_id
-Nagoya University,I1234567890
+Example Research University,I1234567890
 Example Medical University,I100000001
 Example Medical University,I100000002
 ```
@@ -55,7 +59,7 @@ Column meanings:
 ### Fresh generation
 
 ```matlab
-prepare_institutions_csv(["Nagoya University", "Kyoto University", "Osaka University"], ...
+prepare_institutions_csv(["Example Research University", "Example Technical University", "Example Metropolitan University"], ...
     countryFilter="JP", maxCandidates=3)
 ```
 
@@ -68,7 +72,7 @@ prepare_institutions_csv(["Nagoya University", "Kyoto University", "Osaka Univer
 ### Refresh while preserving prior review
 
 ```matlab
-prepare_institutions_csv(["Nagoya University", "Kyoto University"], ...
+prepare_institutions_csv(["Example Research University", "Example Technical University"], ...
     countryFilter="JP", ...
     mergeWith="data/list/institutions.csv")
 ```
