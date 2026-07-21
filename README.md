@@ -198,4 +198,4 @@ Detailed internal project rules and phase-by-phase planning remain in the privat
 
 ## License
 
-MIT License. See [LICENSE](../../LICENSE) for details.
+MIT License. See [LICENSE](LICENSE) for details.

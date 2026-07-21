@@ -1,5 +1,7 @@
 # Examples
 
+&nbsp; [English](../examples.md)
+
 `examples/` は、AnyResearch の通常実行後に `search_results.jsonl` を使って追加分析を行う standalone サンプル群です。
 
 これは Layer 0 の本体機能ではなく、`main_run_pipeline.m` / `main_run_batch.m` / `src/` にも参加しません。

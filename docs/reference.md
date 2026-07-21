@@ -1,5 +1,7 @@
 # Reference
 
+&nbsp; [日本語](jp/reference.md)
+
 This document summarizes the main user-facing functions, helper functions, and smoke tests that are actively referenced by the current workflows.
 
 It is not intended to replace inline MATLAB docstrings.  

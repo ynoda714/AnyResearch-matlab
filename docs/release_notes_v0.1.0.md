@@ -1,5 +1,7 @@
 # Release Notes v0.1.0
 
+&nbsp; [日本語](jp/release_notes_v0.1.0.md)
+
 - Release Date: 2026-03-30
 - Branch: `v0.1.0`
 - Previous: — (initial release)

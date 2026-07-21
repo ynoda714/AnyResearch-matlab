@@ -1,5 +1,7 @@
 # Workflow: Reproduction-Candidate Discovery for EasyMolKit
 
+&nbsp; [日本語](../jp/workflows/repro_discovery.md)
+
 > Use AnyResearch Layer 0 search to build, triage, and register reproduction candidates for EasyMolKit.
 > The goal is fast candidate discovery, not topic clustering or network visualization.
 

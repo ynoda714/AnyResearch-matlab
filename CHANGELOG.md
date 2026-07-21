@@ -1,5 +1,7 @@
 # Changelog
 
+&nbsp; [日本語](docs/jp/CHANGELOG.md)
+
 All notable changes to this project are documented in this file.
 
 This changelog is the high-level release-oriented record.  
@@ -8,6 +10,16 @@ Detailed implementation notes, bug histories, and phase-by-phase development log
 The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
+
+## [1.8.0] - 2026-07-21
+
+### Fixed
+- Documentation cross-links. Added the missing EN↔JP header links between
+  every published English page and its Japanese mirror (reference, examples,
+  changelog, both workflow guides, and the v0.1.0 / v1.0.0 release notes);
+  only README and quickstart had them before.
+- Corrected broken `LICENSE` links in `README.md`, `docs/jp/README.md`, and
+  `docs/quickstart.md` (they pointed above the repository root).
 
 ## [1.7.0] - 2026-07-20
 

@@ -179,4 +179,4 @@ K フェーズ関連の主要テスト:
 
 ## ライセンス
 
-MIT License. 詳細は [LICENSE](LICENSE) を参照。
+MIT License. 詳細は [LICENSE](../../LICENSE) を参照。

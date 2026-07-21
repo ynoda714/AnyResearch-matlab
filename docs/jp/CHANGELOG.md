@@ -1,9 +1,21 @@
 # 変更履歴
 
+&nbsp; [English](../../CHANGELOG.md)
+
 このファイルは [CHANGELOG.md](../../CHANGELOG.md) の日本語ミラーです。
 詳細な実装履歴や開発メモは private な dev リポジトリ側で管理します。
 
 ## Unreleased
+
+## 1.8.0 - 2026-07-21
+
+### 修正
+- ドキュメントの相互リンク。公開している英語ページとその日本語ミラーの間に
+  欠けていた EN↔JP ヘッダリンクを追加した（reference / examples / changelog /
+  両ワークフロー / v0.1.0・v1.0.0 リリースノート）。従来は README と quickstart
+  だけが相互リンクを持っていた。
+- `README.md` / `docs/jp/README.md` / `docs/quickstart.md` の壊れた `LICENSE`
+  リンクを修正した（リポジトリのルートより上を指していた）。
 
 ## 1.7.0 - 2026-07-20
 

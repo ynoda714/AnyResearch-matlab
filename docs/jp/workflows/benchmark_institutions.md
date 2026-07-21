@@ -1,5 +1,7 @@
 # ベンチマーク機関ワークフロー
 
+&nbsp; [English](../../workflows/benchmark_institutions.md)
+
 > 更新日: 2026-07-17
 
 ## 目的

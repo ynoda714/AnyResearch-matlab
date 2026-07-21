@@ -1,5 +1,7 @@
 # ワークフロー: EasyMolKit 向け再現候補論文探索
 
+&nbsp; [English](../../workflows/repro_discovery.md)
+
 > AnyResearch の Layer 0 検索を使って、EasyMolKit の RP 候補を効率よく絞り込む手順。
 > 目的は「候補探索の高速化」であり、分野クラスタリングやネットワーク可視化は行わない。
 

@@ -1,5 +1,7 @@
 # Benchmark Institutions Workflow
 
+&nbsp; [日本語](../jp/workflows/benchmark_institutions.md)
+
 > Updated: 2026-07-17
 
 ## Purpose

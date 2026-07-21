@@ -1,5 +1,7 @@
 # Examples
 
+&nbsp; [日本語](jp/examples.md)
+
 The `examples/` tree contains standalone post-pipeline samples built on top of a normal AnyResearch run.
 
 It is not part of the Layer 0 product path, is not required for `main_run_pipeline.m`, and remains a best-effort example area.

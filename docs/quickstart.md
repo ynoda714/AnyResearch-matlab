@@ -437,4 +437,4 @@ COM mode is unavailable, but the pipeline automatically switches to fallback mod
 | [docs/reference.md](reference.md) | Function and smoke-test reference |
 | [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) | Data sources and library attribution |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Bug reports, feature requests, pull requests |
-| [LICENSE](../../LICENSE) | MIT License |
+| [LICENSE](../LICENSE) | MIT License |

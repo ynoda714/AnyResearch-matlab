@@ -1,5 +1,7 @@
 # Reference
 
+&nbsp; [English](../reference.md)
+
 このドキュメントは、現行ワークフローで参照される主要なユーザー向け関数、helper 関数、smoke test を要約したものです。
 
 MATLAB ファイル内の docstring を置き換えるものではありません。  
