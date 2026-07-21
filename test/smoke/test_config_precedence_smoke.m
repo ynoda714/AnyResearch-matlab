@@ -41,7 +41,26 @@ assert(cfg2.openalex.per_page == 100, ...
 assert(string(cfg2.openalex.api_key) == "", ...
     "api_key default should be empty string");
 
-fprintf("Smoke test passed: config precedence env > json > default\n");
+% Regression: a settings.json that carries leading-underscore meta-keys (as
+% config/settings.example.json ships) must still load. jsondecode renames
+% "_comment" to "x_comment", which previously crashed fieldnames() in the env
+% override step and made the api_key look "not configured".
+metaPath = fullfile(tmpDir, 'test_settings_meta.json');
+fid = fopen(metaPath, 'w', 'n', 'UTF-8');
+fprintf(fid, '{\n');
+fprintf(fid, '  "_comment": "copy me to settings.json",\n');
+fprintf(fid, '  "_priority": "env > json > defaults",\n');
+fprintf(fid, '  "openalex": { "api_key": "meta_key_123", "per_page": 100 }\n');
+fprintf(fid, '}\n');
+fclose(fid);
+
+cfg3 = load_runtime_config(metaPath);
+assert(string(cfg3.openalex.api_key) == "meta_key_123", ...
+    "meta-key JSON: api_key must load despite _comment/_priority keys");
+assert(~isfield(cfg3, "x_comment") && ~isfield(cfg3, "x_priority"), ...
+    "meta-key JSON: mangled meta-keys must not leak into cfg");
+
+fprintf("Smoke test passed: config precedence env > json > default (+ meta-key JSON)\n");
 end
 
 function local_clear_env()

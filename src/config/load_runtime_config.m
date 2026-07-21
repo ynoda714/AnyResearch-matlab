@@ -93,8 +93,10 @@ cfg = struct();
 sectionNames = string(fieldnames(raw));
 for i = 1:numel(sectionNames)
     sec = sectionNames(i);
-    if startsWith(sec, "_")
-        continue;  % Ignore meta-keys such as _comment, _priority
+    if startsWith(sec, "_") || startsWith(sec, "x_")
+        continue;  % Ignore meta-keys such as _comment, _priority.
+                   % jsondecode renames leading-underscore JSON keys to x_ (e.g. _comment -> x_comment),
+                   % so both prefixes must be skipped.
     end
     v = raw.(sec);
     if isstruct(v)
@@ -102,7 +104,7 @@ for i = 1:numel(sectionNames)
         subStruct = struct();
         for k = 1:numel(subKeys)
             sk = subKeys(k);
-            if startsWith(sk, "_")
+            if startsWith(sk, "_") || startsWith(sk, "x_")
                 continue;
             end
             subStruct.(sk) = v.(sk);
@@ -118,6 +120,9 @@ function cfg = local_apply_env(cfg, prefix)
 sectionNames = string(fieldnames(cfg));
 for i = 1:numel(sectionNames)
     sec = sectionNames(i);
+    if ~isstruct(cfg.(sec))
+        continue;  % Defensive: skip any non-struct top-level value (e.g. a stray meta-key)
+    end
     keyNames = string(fieldnames(cfg.(sec)));
     for k = 1:numel(keyNames)
         key = keyNames(k);

@@ -11,6 +11,23 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-07-21
+
+### Fixed
+- **API key not loading from `settings.json` created from the example.**
+  `jsondecode` renames leading-underscore JSON keys (e.g. `_comment` →
+  `x_comment`), and the config loader only skipped `_`-prefixed keys, so the
+  meta-keys shipped in `settings.example.json` leaked into the config and
+  crashed the environment-override step. The API key then looked "not
+  configured" even when it was present. The loader now skips the renamed
+  meta-keys and defensively ignores any non-struct section. Anyone who created
+  `config/settings.json` by copying `config/settings.example.json` was affected.
+- **`main_run_batch` / `main_run_pipeline` failing under "Run Section".**
+  Running a single section (Ctrl+Enter) or an unsaved buffer makes
+  `mfilename('fullpath')` point to a temp folder, so `src/` and
+  `config/settings.json` could not be found. The scripts now fall back to the
+  MATLAB Current Folder and raise a clear message if it is not the repo root.
+
 ## [1.9.0] - 2026-07-21
 
 ### Added

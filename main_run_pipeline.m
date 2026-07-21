@@ -45,6 +45,9 @@ appendToCandidates = false;  % true = append this run to result/candidates/candi
 
 %% 1) Run (do not edit)
 thisDir = fileparts(mfilename('fullpath'));
+if ~isfolder(fullfile(thisDir, 'src')), thisDir = pwd; end   % Run Section / unsaved buffer: mfilename is a temp path, use Current Folder
+assert(isfolder(fullfile(thisDir, 'src')), 'AnyResearch:BadRoot', ...
+    'Set the MATLAB Current Folder to the AnyResearch repo root (the folder with main_run_pipeline.m and src/), then run again.');
 addpath(fullfile(thisDir, 'src', 'pipeline'));
 addpath(fullfile(thisDir, 'src', 'util'));
 

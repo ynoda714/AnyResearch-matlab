@@ -7,6 +7,21 @@
 
 ## Unreleased
 
+## 1.9.1 - 2026-07-21
+
+### 修正
+- **example からコピーした `settings.json` で API キーが読めない不具合。**
+  `jsondecode` は先頭が `_` の JSON キーを `x_`（例: `_comment` → `x_comment`）へ
+  改名するが、config ローダは `_` 始まりしかスキップしていなかったため、
+  `settings.example.json` 同梱のメタキーが config に混入し、環境変数オーバーライド
+  処理で例外になっていた。結果、キーが入っていても「未設定」に見えていた。
+  改名後のメタキーをスキップし、非構造体セクションを防御的に無視するよう修正。
+  `config/settings.example.json` をコピーして `settings.json` を作った全ユーザーが対象。
+- **「Run Section」で `main_run_batch` / `main_run_pipeline` が失敗する不具合。**
+  セクション単独実行（Ctrl+Enter）や未保存バッファ実行では `mfilename('fullpath')`
+  が temp フォルダを指し、`src/` や `config/settings.json` を見つけられなかった。
+  Current Folder にフォールバックし、リポルートでない場合は明確なメッセージを出すよう修正。
+
 ## 1.9.0 - 2026-07-21
 
 ### 追加
