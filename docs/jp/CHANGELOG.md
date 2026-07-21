@@ -7,6 +7,17 @@
 
 ## Unreleased
 
+## 1.10.1 - 2026-07-21
+
+### 修正
+- **not_found 行を含む昇格済み `institutions.csv` で Section 1 がクラッシュする不具合。**
+  `prepare_institutions_csv` は機関を照合できないと `openalex_institution_id` が空の行を
+  書き出す。空の CSV セルは `<missing>` として読まれ、`"<missing>" ~= ""` が true になるため、
+  これらの行が行フィルタを通過して ID 検証に到達し、include フィルタより前に
+  「`<missing>` の string 要素」という分かりにくいエラーで停止していた。
+  `load_institutions_list` は missing 値を正規化し、実際に使用する行（include=1）のみ
+  ID を検証するようにして、未照合・除外行で実行を止めないようにした。
+
 ## 1.10.0 - 2026-07-21
 
 ### 追加

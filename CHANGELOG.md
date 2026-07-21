@@ -11,6 +11,19 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-07-21
+
+### Fixed
+- **Section 1 crashed on a promoted `institutions.csv` that still contained
+  not_found rows.** When `prepare_institutions_csv` cannot match an institution
+  it writes a row with an empty `openalex_institution_id`. Empty CSV fields read
+  back as `<missing>`, and `"<missing>" ~= ""` is true, so those rows survived
+  the row filter and reached ID validation — which failed on the missing value
+  with a confusing "`<missing>` string element" error, before the include filter
+  ran. `load_institutions_list` now normalizes missing values, validates IDs
+  only for the rows that will actually be used (include=1), and no longer aborts
+  a run because of unmatched or excluded rows.
+
 ## [1.10.0] - 2026-07-21
 
 ### Added

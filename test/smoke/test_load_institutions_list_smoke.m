@@ -146,5 +146,21 @@ assert(isequal(string(T8.institution_ids{1}), ["I1000000104"; "I1000000105"]), .
     'T8: institution_ids mismatch after dedup');
 fprintf(' PASS\n'); passCount = passCount + 1;
 
+%% T9: not_found row with empty ID is dropped, not crash the loader
+fprintf('[T9] not_found row (empty ID) -> dropped, reviewed targets load ...');
+csv9 = fullfile(tmpDir, 'with_not_found.csv');
+fid9 = fopen(csv9, 'w', 'n', 'UTF-8');
+assert(fid9 > 0, 'T9: could not write fixture');
+fprintf(fid9, 'account,openalex_institution_id,display_name,include,role,note,status\n');
+fprintf(fid9, 'Toyo University,I158123994,Toyo University,1,main,,found\n');
+fprintf(fid9, 'Toyo University,I215126927,Toyo University Branch,0,,,found\n');
+fprintf(fid9, 'Hokuriku Polytechnic College,,,0,,,not_found\n');
+fclose(fid9);
+T9 = load_institutions_list(csv9);
+assert(any(T9.account == "Toyo University"), 'T9: reviewed target was not loaded');
+assert(~any(T9.account == "Hokuriku Polytechnic College"), ...
+    'T9: not_found row with empty ID leaked into targets');
+fprintf(' PASS\n'); passCount = passCount + 1;
+
 fprintf('\n=== test_load_institutions_list_smoke: %d PASSED ===\n\n', passCount);
 end

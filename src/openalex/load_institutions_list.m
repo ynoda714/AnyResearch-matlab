@@ -41,6 +41,11 @@ roleCol = local_find_optional_column(vars, "role");
 
 accountVals = strtrim(string(L.(accountCol)));
 idVals = strtrim(string(L.(idCol)));
+% Empty CSV fields are read as <missing>, and "<missing> ~= ''" is true, so
+% normalize them to "" first; otherwise not_found rows (empty ID) survive the
+% row filter below and crash ID validation.
+accountVals(ismissing(accountVals)) = "";
+idVals(ismissing(idVals)) = "";
 
 rowMask = accountVals ~= "" & idVals ~= "";
 accountVals = accountVals(rowMask);
@@ -71,8 +76,10 @@ if isempty(accountVals)
     error("load_institutions_list:NoRows", "No valid institution rows found.");
 end
 
-local_validate_id_format(idVals);
-local_warn_duplicate_ids_across_accounts(accountVals, idVals);
+% Validate and cross-check only the rows that will actually be used
+% (include=1). Excluded or unmatched rows must never block a run.
+local_validate_id_format(idVals(includeVals));
+local_warn_duplicate_ids_across_accounts(accountVals(includeVals), idVals(includeVals));
 
 accounts = unique(accountVals, "stable");
 targetAccount = strings(0, 1);
@@ -154,9 +161,15 @@ includeVals = logical(includeVals);
 end
 
 function local_validate_id_format(ids)
+if isempty(ids)
+    return;
+end
 badMask = cellfun(@isempty, regexp(cellstr(ids), '^I\d+$', 'once'));
 if any(badMask)
     badId = ids(find(badMask, 1, "first"));
+    if ismissing(badId)
+        badId = "<empty>";
+    end
     error("load_institutions_list:InvalidId", ...
         "Invalid OpenAlex institution ID: %s", badId);
 end
