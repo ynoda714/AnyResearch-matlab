@@ -177,12 +177,26 @@ if strlength(mergePath) > 0
     if ~local_is_absolute(mergePath)
         mergePath = string(fullfile(projectRoot, char(mergePath)));
     end
+    % mergeWith is best-effort: it carries prior include/role/note decisions
+    % forward on a re-run. On a first run the file is absent, and a hand-made
+    % institutions.csv may not yet have the review columns. Neither should be a
+    % hard failure -- fall back to fresh candidates so the tool still produces
+    % a usable candidate CSV.
     if ~isfile(mergePath)
-        error('prepare_institutions_csv:MergeInputNotFound', ...
-            'mergeWith CSV not found: %s', mergePath);
+        log_info('mergeWith CSV not found (%s); generating fresh candidates without merge.', mergePath);
+        outTable = freshTable;
+    else
+        try
+            existingTable = local_read_existing_review_csv(mergePath);
+            outTable = merge_institutions_review_table(freshTable, existingTable, string(datetime('today', 'Format', 'yyyy-MM-dd')));
+        catch mergeErr
+            warning('prepare_institutions_csv:MergeSkipped', ...
+                ['Ignoring mergeWith CSV (%s): %s\n', ...
+                 'Generating fresh candidates. Review the output, then save it as data/list/institutions.csv.'], ...
+                mergePath, mergeErr.message);
+            outTable = freshTable;
+        end
     end
-    existingTable = local_read_existing_review_csv(mergePath);
-    outTable = merge_institutions_review_table(freshTable, existingTable, string(datetime('today', 'Format', 'yyyy-MM-dd')));
 else
     outTable = freshTable;
 end

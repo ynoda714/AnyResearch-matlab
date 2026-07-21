@@ -11,6 +11,18 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-07-21
+
+### Fixed
+- **Candidate generation hard-failed on the `mergeWith` file.**
+  `main_run_batch` passes `data/list/institutions.csv` to
+  `prepare_institutions_csv` as a "merge prior review decisions" input. On a
+  fresh setup that file is absent, and a hand-made list may not yet have the
+  review columns — both raised a hard error (`MergeInputNotFound` /
+  `MergeMissingColumn`) and blocked the whole run. The merge is now best-effort:
+  a missing or malformed `mergeWith` file logs a note/warning and the tool
+  generates fresh candidates instead of stopping.
+
 ## [1.9.1] - 2026-07-21
 
 ### Fixed

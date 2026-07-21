@@ -7,6 +7,16 @@
 
 ## Unreleased
 
+## 1.9.2 - 2026-07-21
+
+### 修正
+- **候補生成が `mergeWith` ファイルでハードエラーになる不具合。**
+  `main_run_batch` は `data/list/institutions.csv` を「過去のレビュー結果をマージする
+  入力」として `prepare_institutions_csv` に渡すが、新規セットアップではこのファイルが
+  無い、または手書きリストにレビュー用の列が無いため、`MergeInputNotFound` /
+  `MergeMissingColumn` で処理全体が止まっていた。マージを best-effort 化し、
+  ファイルが無い／不正な場合はログ／警告を出して新規候補を生成して継続するよう修正。
+
 ## 1.9.1 - 2026-07-21
 
 ### 修正
