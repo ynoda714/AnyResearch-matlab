@@ -4,7 +4,7 @@
 
 `search_results.jsonl` を使う standalone example については [Examples](examples.md) を参照してください。これらはコア製品パイプラインのサポート対象外です。
 
-> 最終更新: 2026-07-17
+> 最終更新: 2026-09-29
 
 ---
 
@@ -14,7 +14,7 @@ Layer 0 だけで主目的は達成できる。Layer 1 以降は必要なとき�
 
 | 項目 | Layer | 必須/任意 | 備考 |
 |---|---|---|---|
-| MATLAB R2025b 以降 | 0 | 必須 | |
+| MATLAB R2026b 以降 | 0 | 必須 | コアパイプラインと `AnyResearchApp.mlapp` の実行に必要 |
 | OpenAlex API Key | 0 | 必須 | [openalex.org/settings/api](https://openalex.org/settings/api) で無料取得 |
 | `institutions.csv` | 1 | 任意 | 機関バッチ実行時のみ |
 | Text Analytics Toolbox | 3 | 任意 | PDF本文抽出 |
@@ -49,8 +49,6 @@ python -m venv venv
 venv\Scripts\activate
 pip install -r src/python/requirements.txt
 ```
-
----
 
 ## 3. 基本実行: 単一キーワード検索
 
@@ -110,11 +108,38 @@ result/runs/<YYYYMMDD_HHMMSS>/
 
 ---
 
-## 4. 機関バッチ実行
+## 4. 任意: GUI（`AnyResearchApp.mlapp`）
+
+`AnyResearchApp.mlapp` は、`.m` ファイルを編集せずに使いたい方のための代替入口です。`main_run_pipeline.m` と `main_run_batch.m` も、これまでどおり利用できます。
+
+GUI を使うには、[前提](#1-前提)にあるとおり MATLAB R2026b 以降が必要です。
+
+### 4.1 起動
+
+リポジトリ直下の `AnyResearchApp.mlapp` をダブルクリックするか、MATLAB で次を実行します。
+
+```matlab
+open("AnyResearchApp.mlapp")
+```
+
+### 4.2 タブ
+
+| タブ | 目的 |
+|---|---|
+| **Search** | 日付、並び順、フィルタを指定して Layer 0 のキーワード検索を実行する。 |
+| **Batch** | Layer 1 の4段階（機関候補の生成、レビュー、レビュー済みリストへの昇格、バッチ実行）を進める。 |
+| **Analytics & PDF** | Layer 2 の citation velocity、topic growth rate、institution dominance は検索・バッチ結果に自動で含まれる。Layer 3 の PDF ダウンロード、本文抽出、キーワード証拠を設定する。 |
+| **Settings** | OpenAlex API Key を入力し、`config/settings.json` に保存する。 |
+
+Search タブは `main_run_pipeline.m` と同じ `result/runs/<timestamp>/` に、Batch タブは `main_run_batch.m` と同じ `result/batch/<timestamp>/` に出力します。出力内容は上記「基本実行」と下記「機関バッチ実行」の出力先を参照してください。
+
+---
+
+## 5. 機関バッチ実行
 
 `main_run_batch.m` を使う。入力 CSV は旧2列形式と reviewed v2 の両方を受け付ける。
 
-### 4.1 旧2列形式
+### 5.1 旧2列形式
 
 ```csv
 Account,openalex_institution_id
@@ -123,7 +148,7 @@ Example Medical University,I100000001
 Example Medical University,I100000002
 ```
 
-### 4.2 reviewed v2 形式
+### 5.2 reviewed v2 形式
 
 ```csv
 account,openalex_institution_id,display_name,include,role,note
@@ -139,7 +164,7 @@ Example Medical University,I9999999999,Old Candidate,0,other,excluded after revi
 - `include=0` の行は監査用に残してよい
 - 複数 ID は `I1|I2|...` として記録される
 
-### 4.3 実行
+### 5.3 実行
 
 ```matlab
 query           = "renewable energy forecasting";
@@ -160,7 +185,7 @@ result/batch/<YYYYMMDD_HHMMSS>/
 
 ---
 
-## 5. arXiv 統合
+## 6. arXiv 統合
 
 OpenAlex に未収載のプレプリントも見たい場合:
 
@@ -176,7 +201,7 @@ useArxiv = true;
 
 ---
 
-## 6. EasyMolKit 向け候補探索（Phase K）
+## 7. EasyMolKit 向け候補探索
 
 再現候補探索では、`cited_by_count` だけでなく `fwci` と `repro_signal_score` を使う。
 
@@ -208,7 +233,7 @@ citedByMin        = 20;
 
 2026-07-17 に `Morgan fingerprint ECFP cheminformatics QSAR` で実行確認し、`repro_signal_score` と `fwci` の併用で候補上位化が機能することを確認済み。
 
-### 6.1 既知論文 1 本から周辺探索する
+### 7.1 既知論文 1 本から周辺探索する
 
 ```matlab
 query        = "";
@@ -222,7 +247,7 @@ citedByMin   = 5;
 
 詳しい手順は [docs/workflows/repro_discovery.md](workflows/repro_discovery.md) を参照。
 
-### 6.2 候補台帳を使う（Phase L）
+### 7.2 候補台帳を使う
 
 候補を run 横断で蓄積したい場合:
 
@@ -248,7 +273,7 @@ update_candidates_ledger( ...
     note="Tier A candidate");
 ```
 
-## 7. テスト
+## 8. テスト
 
 ```matlab
 addpath("test");
@@ -258,16 +283,15 @@ run_smoke_tests("python")
 run_smoke_tests("all")
 ```
 
-K フェーズ関連:
+関連テスト:
 
-- `test_phase6a_params_smoke()` — `citedByMin` / `citedByMax` / retry / OR 検索
 - `test_repro_signals_smoke()` — repro signal 辞書 / custom JSON override
 - `test_analytics_smoke()` — `citation_velocity` の `counts_by_year` 優先計算
 - `test_snowball_smoke()` — `seedId` / `snowballMode`
 
 ---
 
-## 8. FAQ
+## 9. FAQ
 
 **Q. OpenAI API Key は必要ですか？**  
 A. 不要。AnyResearch は OpenAI を使わない。
@@ -283,7 +307,7 @@ A. `query` の綴り、期間、`requireOpenAccess`、`requireAbstract`、`filte
 
 ---
 
-## 9. 関連ドキュメント
+## 10. 関連ドキュメント
 
 | ファイル | 内容 |
 |---|---|
@@ -293,5 +317,3 @@ A. `query` の綴り、期間、`requireOpenAccess`、`requireAbstract`、`filte
 | [docs/jp/CHANGELOG.md](CHANGELOG.md) | 変更履歴の日本語補助 |
 | [docs/reference.md](../reference.md) | 関数・smoke test リファレンス |
 | [docs/jp/reference.md](reference.md) | 関数・smoke test リファレンス（日本語補助） |
-
-詳細な開発規約とフェーズ計画は、非公開の開発リポジトリで管理しています。

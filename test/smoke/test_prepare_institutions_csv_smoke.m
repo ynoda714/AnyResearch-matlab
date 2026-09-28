@@ -12,6 +12,7 @@ totalTests = 14;
 
 thisDir = fileparts(mfilename('fullpath'));
 projectRoot = fullfile(thisDir, '..', '..');
+addpath(fullfile(projectRoot, 'test'));
 addpath(fullfile(projectRoot, 'src', 'openalex'));
 addpath(fullfile(projectRoot, 'src', 'config'));
 addpath(fullfile(projectRoot, 'src', 'util'));
@@ -79,7 +80,7 @@ try
     assert(numel(unique(T2.account)) == 2, 'T2: expected 2 unique accounts');
     fprintf(' PASS\n'); passCount = passCount + 1;
 catch ex
-    if local_is_network_error(ex)
+    if is_network_error(ex)
         fprintf(' SKIP (network unavailable)\n');
         passCount = passCount + 1;
     else
@@ -105,7 +106,7 @@ try
     end
     fprintf(' PASS\n'); passCount = passCount + 1;
 catch ex
-    if local_is_network_error(ex)
+    if is_network_error(ex)
         fprintf(' SKIP (network unavailable)\n');
         passCount = passCount + 1;
     else
@@ -124,7 +125,7 @@ try
     assert(T4.include(1) == 0, 'T4: include should default to 0');
     fprintf(' PASS\n'); passCount = passCount + 1;
 catch ex
-    if local_is_network_error(ex)
+    if is_network_error(ex)
         fprintf(' SKIP (network unavailable)\n');
         passCount = passCount + 1;
     else
@@ -148,7 +149,7 @@ try
     end
     fprintf(' PASS\n'); passCount = passCount + 1;
 catch ex
-    if local_is_network_error(ex)
+    if is_network_error(ex)
         fprintf(' SKIP (network unavailable)\n');
         passCount = passCount + 1;
     else
@@ -240,7 +241,7 @@ try
     end
     fprintf(' PASS\n'); passCount = passCount + 1;
 catch ex
-    if local_is_network_error(ex)
+    if is_network_error(ex)
         fprintf(' SKIP (network unavailable)\n');
         passCount = passCount + 1;
     else
@@ -276,13 +277,4 @@ for i = 1:numel(expectedCols)
     assert(ismember(expectedCols{i}, T.Properties.VariableNames), ...
         sprintf('%s: missing column "%s"', label, expectedCols{i}));
 end
-end
-
-function tf = local_is_network_error(ex)
-tf = contains(ex.message, 'MATLAB:webservices') || ...
-     contains(lower(ex.message), 'connect') || ...
-     contains(lower(ex.message), 'timeout') || ...
-     contains(lower(ex.message), 'failed to') || ...
-     contains(ex.identifier, 'webread') || ...
-     contains(ex.identifier, 'ApiError');
 end

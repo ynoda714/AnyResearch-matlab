@@ -27,6 +27,7 @@ passCount = 0;
 
 thisDir = fileparts(mfilename('fullpath'));
 projectRoot = fullfile(thisDir, '..', '..');
+addpath(fullfile(projectRoot, 'test'));
 addpath(fullfile(projectRoot, 'src', 'pipeline'));
 addpath(fullfile(projectRoot, 'src', 'util'));
 addpath(fullfile(projectRoot, 'src', 'config'));
@@ -283,15 +284,34 @@ else
             appendToCandidates=true, ...
             ledgerPath=customLedgerPath);
         assert(r13.success_count == int32(1), 'T13: success_count != 1');
-        assert(isfield(r13, 'candidates_jsonl'), 'T13: result.candidates_jsonl missing');
-        assert(isfield(r13, 'candidates_xlsx'), 'T13: result.candidates_xlsx missing');
-        assert(isfield(r13, 'candidates_md'), 'T13: result.candidates_md missing');
-        assert(string(r13.candidates_jsonl) == customLedgerPath, 'T13: result.candidates_jsonl mismatch');
-        assert(isfile(customLedgerPath), 'T13: custom ledgerPath was not created');
-        ledger13 = read_jsonl(customLedgerPath);
-        assert(height(ledger13) > 0, 'T13: custom ledger is empty');
-        assert(isfile(string(r13.candidates_xlsx)), 'T13: candidates xlsx missing');
-        assert(isfile(string(r13.candidates_md)), 'T13: candidates markdown missing');
+        Tsummary13 = readtable(r13.summary_csv, 'TextType', 'string', ...
+            'VariableNamingRule', 'preserve', 'Delimiter', ',');
+        local_throw_if_rate_limited(Tsummary13);
+        assert(height(Tsummary13) == 1, 'T13: batch_summary.csv row count != 1');
+        rowsFetched13 = str2double(string(Tsummary13.rows_fetched(1)));
+        assert(~isnan(rowsFetched13), 'T13: rows_fetched must be numeric');
+
+        if rowsFetched13 == 0
+            % The v1.9.0 placeholder IDs intentionally return zero OpenAlex works.
+            assert(~isfield(r13, 'candidates_jsonl'), ...
+                'T13: candidates_jsonl must be absent when no works are fetched');
+            assert(~isfield(r13, 'candidates_xlsx'), ...
+                'T13: candidates_xlsx must be absent when no works are fetched');
+            assert(~isfield(r13, 'candidates_md'), ...
+                'T13: candidates_md must be absent when no works are fetched');
+            assert(~isfile(customLedgerPath), ...
+                'T13: custom ledgerPath must not be created when no works are fetched');
+        else
+            assert(isfield(r13, 'candidates_jsonl'), 'T13: result.candidates_jsonl missing');
+            assert(isfield(r13, 'candidates_xlsx'), 'T13: result.candidates_xlsx missing');
+            assert(isfield(r13, 'candidates_md'), 'T13: result.candidates_md missing');
+            assert(string(r13.candidates_jsonl) == customLedgerPath, 'T13: result.candidates_jsonl mismatch');
+            assert(isfile(customLedgerPath), 'T13: custom ledgerPath was not created');
+            ledger13 = read_jsonl(customLedgerPath);
+            assert(height(ledger13) > 0, 'T13: custom ledger is empty');
+            assert(isfile(string(r13.candidates_xlsx)), 'T13: candidates xlsx missing');
+            assert(isfile(string(r13.candidates_md)), 'T13: candidates markdown missing');
+        end
         if defaultExistsBefore
             defaultLedgerInfoAfter = dir(defaultLedgerPath);
             assert(defaultLedgerInfoAfter.datenum == defaultLedgerInfoBefore.datenum && ...
@@ -304,7 +324,7 @@ else
         fprintf(' PASS\n');
         passCount = passCount + 1;
     catch exNet
-        if local_is_network_error(exNet)
+        if is_network_error(exNet)
             fprintf(' SKIP (network/rate-limit constrained: %s)\n', exNet.message);
         else
             rethrow(exNet);
@@ -343,15 +363,6 @@ try
     ok = info.ok && info.can_query && enoughCredits;
 catch
 end
-end
-
-function tf = local_is_network_error(ex)
-msg = string(ex.message);
-idf = string(ex.identifier);
-tf = contains(msg, "429") || contains(msg, "503") || ...
-     contains(msg, "Too Many Requests") || contains(msg, "Service Unavailable") || ...
-     contains(msg, "webread") || contains(msg, "urlread") || ...
-     contains(msg, "readContentFromWebService") || contains(idf, "MATLAB:webread");
 end
 
 function local_throw_if_rate_limited(Tsummary)

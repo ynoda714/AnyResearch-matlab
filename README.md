@@ -78,6 +78,10 @@ result/runs/<YYYYMMDD_HHMMSS>/
   run_meta.json
 ```
 
+### Optional: Use the graphical interface
+
+`AnyResearchApp.mlapp` in the repository root provides a graphical alternative to editing the `.m` entry points. It requires MATLAB R2026b or later; see the [GUI guide](docs/quickstart.md#optional-graphical-interface-anyresearchappmlapp) for launch instructions and details.
+
 ## Excel Output
 
 | Sheet | Contents |
@@ -130,7 +134,7 @@ Analytics are integrated automatically into Summary and `batch_comparison.xlsx`.
 | `growth_rate_pct` | Year-over-year paper-count growth |
 | `institution_dominance` | Composite score based on paper share and citation share |
 
-### Candidate Ledger (Phase L)
+### Candidate Ledger
 
 Candidate discovery can now be managed across runs instead of by one-off spreadsheet copies.
 
@@ -193,8 +197,6 @@ docs/
 | [docs/workflows/repro_discovery.md](docs/workflows/repro_discovery.md) | Reproduction-candidate discovery and candidate-ledger workflow |
 | [docs/reference.md](docs/reference.md) | Function and smoke-test reference |
 | [CHANGELOG.md](CHANGELOG.md) | High-level release history |
-
-Detailed internal project rules and phase-by-phase planning remain in the private development repository.
 
 ## License
 

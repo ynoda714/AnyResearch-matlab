@@ -14,6 +14,7 @@
 % Note: Case 3 calls the live OpenAlex API and requires network access.
 
 thisDir = fileparts(mfilename('fullpath'));
+addpath(fullfile(thisDir, '..'));
 addpath(fullfile(thisDir, '..', '..', 'src', 'openalex'));
 addpath(fullfile(thisDir, '..', '..', 'src', 'util'));
 
@@ -35,8 +36,7 @@ try
     fprintf("[PASS] Case3: query='' → total_count=%d （filter-only 取得成功）\n", double(m12.total_count));
 
 catch apiEx
-    if contains(apiEx.message, 'MATLAB:webservices') || contains(apiEx.message, 'webread') ...
-            || contains(apiEx.identifier, 'MATLAB:webread')
+    if is_network_error(apiEx)
         fprintf("[SKIP] Case2/3: ネットワーク到達不可のためスキップ: %s\n", apiEx.message);
     else
         rethrow(apiEx);
@@ -53,8 +53,7 @@ try
         sprintf("Case4: query='matlab' なのに meta.search_query='%s'", m4.search_query));
     fprintf("[PASS] Case4: query='matlab' → meta.search_query='matlab'\n");
 catch c4Ex
-    if contains(c4Ex.message, 'MATLAB:webservices') || contains(c4Ex.message, 'webread') ...
-            || contains(c4Ex.identifier, 'MATLAB:webread')
+    if is_network_error(c4Ex)
         fprintf("[SKIP] Case4: ネットワーク到達不可のためスキップ\n");
     else
         rethrow(c4Ex);

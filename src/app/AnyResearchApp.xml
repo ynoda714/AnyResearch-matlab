@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<MATLABApp schemaVersion='1.0.0' release='R2026b.0' minRelease='R2026b'>
+    <UIFigure name='UIFigure'>
+        <CloseRequestFcn>CloseRequestFcn</CloseRequestFcn>
+        <Name>'AnyResearch'</Name>
+        <Position>[100 100 1000 720]</Position>
+        <Children>
+            <GridLayout name='RootGrid'>
+                <ColumnWidth>{'1x'}</ColumnWidth>
+                <RowHeight>{'fit', '1x', 'fit'}</RowHeight>
+                <Padding>[12 12 12 12]</Padding>
+                <RowSpacing>8</RowSpacing>
+                <Children>
+                    <Label name='AppTitleLabel'>
+                        <Text>'AnyResearch'</Text>
+                        <FontSize>18</FontSize>
+                        <FontWeight>'bold'</FontWeight>
+                        <Layout><Column>1</Column><Row>1</Row></Layout>
+                    </Label>
+                    <TabGroup name='MainTabGroup'>
+                        <Layout><Column>1</Column><Row>2</Row></Layout>
+                        <Children>
+                            <Tab name='SearchTab'>
+                                <Title>'Search'</Title>
+                                <Children>
+                                    <GridLayout name='SearchGrid'>
+                                        <ColumnWidth>{'1x', 'fit'}</ColumnWidth>
+                                        <RowHeight>{'1x', 'fit'}</RowHeight>
+                                        <Padding>[12 12 12 12]</Padding>
+                                        <RowSpacing>10</RowSpacing>
+                                        <ColumnSpacing>10</ColumnSpacing>
+                                        <Children>
+                                            <Panel name='SearchParametersPanel'>
+                                                <Title>'Layer 0 search parameters'</Title>
+                                                <Layout><Column>[1 2]</Column><Row>1</Row></Layout>
+                                                <Children>
+                                                    <GridLayout name='SearchParametersGrid'>
+                                                        <ColumnWidth>{180, '1x'}</ColumnWidth>
+                                                        <RowHeight>{'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'}</RowHeight>
+                                                        <Padding>[12 12 12 12]</Padding>
+                                                        <RowSpacing>6</RowSpacing>
+                                                        <Children>
+                                                            <Label name='QueryLabel'><Text>'Query'</Text><Layout><Column>1</Column><Row>1</Row></Layout></Label>
+                                                            <EditField name='QueryEditField'><Value>'MATLAB'</Value><Layout><Column>2</Column><Row>1</Row></Layout></EditField>
+                                                            <Label name='FromDateLabel'><Text>'From date'</Text><Layout><Column>1</Column><Row>2</Row></Layout></Label>
+                                                            <DatePicker name='FromDatePicker'><DisplayFormat>'yyyy-MM-dd'</DisplayFormat><Layout><Column>2</Column><Row>2</Row></Layout></DatePicker>
+                                                            <Label name='ToDateLabel'><Text>'To date'</Text><Layout><Column>1</Column><Row>3</Row></Layout></Label>
+                                                            <DatePicker name='ToDatePicker'><DisplayFormat>'yyyy-MM-dd'</DisplayFormat><Layout><Column>2</Column><Row>3</Row></Layout></DatePicker>
+                                                            <Label name='SortByLabel'><Text>'Sort order'</Text><Layout><Column>1</Column><Row>4</Row></Layout></Label>
+                                                            <DropDown name='SortByDropDown'><Items>{'cited_by_count:desc', 'publication_date:desc', 'relevance_score'}</Items><Value>'cited_by_count:desc'</Value><Layout><Column>2</Column><Row>4</Row></Layout></DropDown>
+                                                            <Label name='FilterTypeLabel'><Text>'Document type filter'</Text><Layout><Column>1</Column><Row>5</Row></Layout></Label>
+                                                            <EditField name='FilterTypeEditField'><Placeholder>'article, review, or blank for all'</Placeholder><Layout><Column>2</Column><Row>5</Row></Layout></EditField>
+                                                            <Label name='CitedByMinLabel'><Text>'Minimum citations'</Text><Layout><Column>1</Column><Row>6</Row></Layout></Label>
+                                                            <NumericEditField name='CitedByMinField'><Limits>[0 Inf]</Limits><Value>0</Value><Layout><Column>2</Column><Row>6</Row></Layout></NumericEditField>
+                                                            <Label name='CitedByMaxLabel'><Text>'Maximum citations (0 = off)'</Text><Layout><Column>1</Column><Row>7</Row></Layout></Label>
+                                                            <NumericEditField name='CitedByMaxField'><Limits>[0 Inf]</Limits><Value>0</Value><Layout><Column>2</Column><Row>7</Row></Layout></NumericEditField>
+                                                            <Label name='SeedIdLabel'><Text>'Seed DOI or OpenAlex work ID'</Text><Layout><Column>1</Column><Row>8</Row></Layout></Label>
+                                                            <EditField name='SeedIdEditField'><Layout><Column>2</Column><Row>8</Row></Layout></EditField>
+                                                            <Label name='SnowballModeLabel'><Text>'Snowball mode'</Text><Layout><Column>1</Column><Row>9</Row></Layout></Label>
+                                                            <DropDown name='SnowballModeDropDown'><Items>{'citing', 'referenced'}</Items><Value>'citing'</Value><Layout><Column>2</Column><Row>9</Row></Layout></DropDown>
+                                                            <Label name='TopNLabel'><Text>'Top N in Summary'</Text><Layout><Column>1</Column><Row>10</Row></Layout></Label>
+                                                            <NumericEditField name='TopNField'><Limits>[1 Inf]</Limits><RoundFractionalValues>'on'</RoundFractionalValues><Value>10</Value><Layout><Column>2</Column><Row>10</Row></Layout></NumericEditField>
+                                                            <Label name='LanguageLabel'><Text>'Language'</Text><Layout><Column>1</Column><Row>11</Row></Layout></Label>
+                                                            <EditField name='LanguageEditField'><Value>'en'</Value><Layout><Column>2</Column><Row>11</Row></Layout></EditField>
+                                                            <CheckBox name='RequireOpenAccessCheckBox'><Text>'Require Open Access'</Text><Value>true</Value><Layout><Column>[1 2]</Column><Row>12</Row></Layout></CheckBox>
+                                                            <CheckBox name='RequireAbstractCheckBox'><Text>'Require abstract'</Text><Value>true</Value><Layout><Column>[1 2]</Column><Row>13</Row></Layout></CheckBox>
+                                                            <Label name='CountryCodeLabel'><Text>'Country code'</Text><Layout><Column>1</Column><Row>14</Row></Layout></Label>
+                                                            <EditField name='CountryCodeEditField'><Value>'JP'</Value><Layout><Column>2</Column><Row>14</Row></Layout></EditField>
+                                                            <Label name='InstitutionLabel'><Text>'First-author institution'</Text><Layout><Column>1</Column><Row>15</Row></Layout></Label>
+                                                            <EditField name='InstitutionEditField'><Layout><Column>2</Column><Row>15</Row></Layout></EditField>
+                                                            <Label name='InstitutionIdLabel'><Text>'Institution ID'</Text><Layout><Column>1</Column><Row>16</Row></Layout></Label>
+                                                            <EditField name='InstitutionIdEditField'><Placeholder>'I26973366'</Placeholder><Layout><Column>2</Column><Row>16</Row></Layout></EditField>
+                                                        </Children>
+                                                    </GridLayout>
+                                                </Children>
+                                            </Panel>
+                                            <Button name='SearchRunButton'>
+                                                <Text>'Run Search'</Text>
+                                                <ButtonPushedFcn>SearchRunButtonPushed</ButtonPushedFcn>
+                                                <Layout><Column>2</Column><Row>2</Row></Layout>
+                                            </Button>
+                                        </Children>
+                                    </GridLayout>
+                                </Children>
+                            </Tab>
+                            <Tab name='BatchTab'>
+                                <Title>'Batch'</Title>
+                                <Children>
+                                    <GridLayout name='BatchGrid'>
+                                        <ColumnWidth>{'1x'}</ColumnWidth>
+                                        <RowHeight>{'fit', '1x', 'fit'}</RowHeight>
+                                        <Padding>[12 12 12 12]</Padding>
+                                        <RowSpacing>8</RowSpacing>
+                                        <Children>
+                                            <Label name='BatchStepLabel'><Text>'1. Generate candidates  →  2. Review  →  3. Promote  →  4. Run batch'</Text><FontWeight>'bold'</FontWeight><Layout><Column>1</Column><Row>1</Row></Layout></Label>
+                                            <GridLayout name='BatchContentGrid'>
+                                                <ColumnWidth>{'1x'}</ColumnWidth>
+                                                <RowHeight>{'1x', 0, 0, 0}</RowHeight>
+                                                <Layout><Column>1</Column><Row>2</Row></Layout>
+                                                <Children>
+                                                    <Panel name='BatchGeneratePanel'><Title>'Step 1 — Generate institution candidates'</Title><Layout><Column>1</Column><Row>1</Row></Layout><Children><GridLayout name='BatchGenerateGrid'><ColumnWidth>{180, '1x'}</ColumnWidth><RowHeight>{'fit', '1x', 'fit', 'fit'}</RowHeight><Padding>[12 12 12 12]</Padding><Children><Label name='TargetNamesLabel'><Text>'Target institution names'</Text><Layout><Column>1</Column><Row>1</Row></Layout></Label><TextArea name='TargetNamesTextArea'><Value>{'Nagoya University'; 'Example Medical University'}</Value><Layout><Column>2</Column><Row>[1 2]</Row></Layout></TextArea><Label name='PrepareCountryLabel'><Text>'Country filter'</Text><Layout><Column>1</Column><Row>3</Row></Layout></Label><EditField name='PrepareCountryEditField'><Value>'JP'</Value><Layout><Column>2</Column><Row>3</Row></Layout></EditField><Button name='GenerateCandidatesButton'><Text>'Generate candidates'</Text><ButtonPushedFcn>GenerateCandidatesButtonPushed</ButtonPushedFcn><Layout><Column>2</Column><Row>4</Row></Layout></Button></Children></GridLayout></Children></Panel>
+                                                    <Panel name='BatchReviewPanel'><Title>'Step 2 — Review candidates'</Title><Visible>false</Visible><Layout><Column>1</Column><Row>2</Row></Layout><Children><GridLayout name='BatchReviewGrid'><ColumnWidth>{'1x'}</ColumnWidth><RowHeight>{'1x', 'fit'}</RowHeight><Padding>[12 12 12 12]</Padding><Children><Table name='CandidateTable'><ColumnName>{'account', 'openalex_institution_id', 'display_name', 'country_code', 'include', 'role', 'note', 'status'}</ColumnName><ColumnWidth>{120, 150, 220, 90, 70, 100, 200, 110}</ColumnWidth><Layout><Column>1</Column><Row>1</Row></Layout></Table><Button name='ReviewCandidatesButton'><Text>'Save review and continue'</Text><ButtonPushedFcn>ReviewCandidatesButtonPushed</ButtonPushedFcn><Layout><Column>1</Column><Row>2</Row></Layout></Button></Children></GridLayout></Children></Panel>
+                                                    <Panel name='BatchPromotePanel'><Title>'Step 3 — Promote reviewed candidates'</Title><Visible>false</Visible><Layout><Column>1</Column><Row>3</Row></Layout><Children><GridLayout name='BatchPromoteGrid'><ColumnWidth>{'1x'}</ColumnWidth><RowHeight>{'1x', 'fit'}</RowHeight><Padding>[12 12 12 12]</Padding><Children><Label name='PromoteHelpLabel'><Text>'Promote rows marked include=true to the reviewed institutions list used by batch runs.'</Text><WordWrap>'on'</WordWrap><Layout><Column>1</Column><Row>1</Row></Layout></Label><Button name='PromoteCandidatesButton'><Text>'Promote reviewed candidates'</Text><ButtonPushedFcn>PromoteCandidatesButtonPushed</ButtonPushedFcn><Layout><Column>1</Column><Row>2</Row></Layout></Button></Children></GridLayout></Children></Panel>
+                                                    <Panel name='BatchRunPanel'><Title>'Step 4 — Run batch'</Title><Visible>false</Visible><Layout><Column>1</Column><Row>4</Row></Layout><Children><GridLayout name='BatchRunGrid'><ColumnWidth>{180, '1x'}</ColumnWidth><RowHeight>{'fit', 'fit', 'fit', 'fit', 'fit'}</RowHeight><Padding>[12 12 12 12]</Padding><Children><Label name='BatchQueryLabel'><Text>'Query'</Text><Layout><Column>1</Column><Row>1</Row></Layout></Label><EditField name='BatchQueryEditField'><Value>'machine learning'</Value><Layout><Column>2</Column><Row>1</Row></Layout></EditField><Label name='BatchFromDateLabel'><Text>'From date'</Text><Layout><Column>1</Column><Row>2</Row></Layout></Label><DatePicker name='BatchFromDatePicker'><DisplayFormat>'yyyy-MM-dd'</DisplayFormat><Layout><Column>2</Column><Row>2</Row></Layout></DatePicker><Label name='BatchToDateLabel'><Text>'To date'</Text><Layout><Column>1</Column><Row>3</Row></Layout></Label><DatePicker name='BatchToDatePicker'><DisplayFormat>'yyyy-MM-dd'</DisplayFormat><Layout><Column>2</Column><Row>3</Row></Layout></DatePicker><CheckBox name='BatchDryRunCheckBox'><Text>'Dry run (preview filters and counts only)'</Text><Layout><Column>[1 2]</Column><Row>4</Row></Layout></CheckBox><Button name='RunBatchButton'><Text>'Run batch'</Text><ButtonPushedFcn>RunBatchButtonPushed</ButtonPushedFcn><Layout><Column>2</Column><Row>5</Row></Layout></Button></Children></GridLayout></Children></Panel>
+                                                </Children>
+                                            </GridLayout>
+                                            <Button name='BatchBackButton'><Text>'Back'</Text><Enable>'off'</Enable><ButtonPushedFcn>BatchBackButtonPushed</ButtonPushedFcn><Layout><Column>1</Column><Row>3</Row></Layout></Button>
+                                        </Children>
+                                    </GridLayout>
+                                </Children>
+                            </Tab>
+                            <Tab name='AnalyticsPdfTab'>
+                                <Title>'Analytics &amp; PDF'</Title>
+                                <Children>
+                                    <GridLayout name='AnalyticsPdfGrid'>
+                                        <ColumnWidth>{'1x'}</ColumnWidth>
+                                        <RowHeight>{'fit', 'fit', '1x'}</RowHeight>
+                                        <Padding>[12 12 12 12]</Padding>
+                                        <RowSpacing>10</RowSpacing>
+                                        <Children>
+                                            <Panel name='AnalyticsPanel'><Title>'Layer 2 — Analytics'</Title><Layout><Column>1</Column><Row>1</Row></Layout><Children><Label name='AnalyticsStatusLabel'><Text>'Analytics are automatically computed and included in Layer 0 and Layer 1 results.'</Text><WordWrap>'on'</WordWrap><Position>[12 12 800 28]</Position></Label></Children></Panel>
+                                            <Panel name='PdfPanel'><Title>'Layer 3 — PDF options'</Title><Layout><Column>1</Column><Row>2</Row></Layout><Children><GridLayout name='PdfOptionsGrid'><ColumnWidth>{220, '1x'}</ColumnWidth><RowHeight>{'fit', 'fit', 'fit', 'fit'}</RowHeight><Padding>[12 12 12 12]</Padding><Children><CheckBox name='EnablePdfDownloadCheckBox'><Text>'Download Open Access PDFs'</Text><Layout><Column>[1 2]</Column><Row>1</Row></Layout></CheckBox><Label name='PdfMaxRowsLabel'><Text>'Maximum PDFs per run'</Text><Layout><Column>1</Column><Row>2</Row></Layout></Label><NumericEditField name='PdfMaxRowsField'><Limits>[1 Inf]</Limits><RoundFractionalValues>'on'</RoundFractionalValues><Value>20</Value><Layout><Column>2</Column><Row>2</Row></Layout></NumericEditField><CheckBox name='EnablePdfTextCheckBox'><Text>'Extract PDF text'</Text><Value>true</Value><Layout><Column>[1 2]</Column><Row>3</Row></Layout></CheckBox><CheckBox name='EnableKeywordEvidenceCheckBox'><Text>'Extract keyword evidence'</Text><Value>true</Value><Layout><Column>[1 2]</Column><Row>4</Row></Layout></CheckBox></Children></GridLayout></Children></Panel>
+                                        </Children>
+                                    </GridLayout>
+                                </Children>
+                            </Tab>
+                            <Tab name='SettingsTab'>
+                                <Title>'Settings'</Title>
+                                <Children>
+                                    <GridLayout name='SettingsGrid'>
+                                        <ColumnWidth>{180, '1x'}</ColumnWidth>
+                                        <RowHeight>{'fit', 'fit', 'fit', '1x'}</RowHeight>
+                                        <Padding>[12 12 12 12]</Padding>
+                                        <RowSpacing>10</RowSpacing>
+                                        <Children>
+                                            <Label name='ApiKeyLabel'><Text>'OpenAlex API key'</Text><Layout><Column>1</Column><Row>1</Row></Layout></Label>
+                                            <EditField name='ApiKeyEditField'><Placeholder>'Enter a new key to save it in config/settings.json'</Placeholder><Layout><Column>2</Column><Row>1</Row></Layout></EditField>
+                                            <Button name='SaveApiKeyButton'><Text>'Save API key'</Text><ButtonPushedFcn>SaveApiKeyButtonPushed</ButtonPushedFcn><Layout><Column>2</Column><Row>2</Row></Layout></Button>
+                                            <Label name='SettingsHelpLabel'><Text>'Environment variable ANYRESEARCH_OPENALEX_API_KEY takes precedence over config/settings.json. The existing configuration mechanism is otherwise unchanged.'</Text><WordWrap>'on'</WordWrap><Layout><Column>[1 2]</Column><Row>3</Row></Layout></Label>
+                                        </Children>
+                                    </GridLayout>
+                                </Children>
+                            </Tab>
+                        </Children>
+                    </TabGroup>
+                    <Label name='StatusLabel'>
+                        <Text>'Ready.'</Text>
+                        <Layout><Column>1</Column><Row>3</Row></Layout>
+                    </Label>
+                </Children>
+            </GridLayout>
+        </Children>
+    </UIFigure>
+    <AppDetails>
+        <Name>AnyResearchApp</Name>
+        <Version>1.0</Version>
+    </AppDetails>
+    <InternalData>
+        <AppId>de2ea148-ff2f-f7c2-6ecf-a0deacb6a2b0</AppId>
+    </InternalData>
+    <RunConfiguration>
+        <StartupFcn>startupFcn</StartupFcn>
+    </RunConfiguration>
+    <Thumbnail autoCapture='true'></Thumbnail>
+</MATLABApp>

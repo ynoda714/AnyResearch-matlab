@@ -78,6 +78,10 @@ result/runs/<YYYYMMDD_HHMMSS>/
 
 詳しい手順は [docs/quickstart.md](quickstart.md) を参照。
 
+### 任意: `.m` を編集せずに GUI を使う
+
+リポジトリ直下の `AnyResearchApp.mlapp` は、`.m` の入口ファイルを編集せずに使える GUI です。MATLAB R2026b 以降が必要です。起動方法と詳細は [GUI の使い方](quickstart.md#4-任意-gui-anyresearchappmlapp) を参照してください。
+
 ## Excel 出力
 
 | シート | 内容 |
@@ -103,7 +107,7 @@ requireOpenAccess = true;
 citedByMin        = 20;
 ```
 
-Phase K 以降の候補探索では、次の列を使って候補を絞ります。
+候補探索では、次の列を使って候補を絞ります。
 
 - `fwci`
 - `citation_percentile`
@@ -136,7 +140,7 @@ citedByMin   = 5;
 
 詳細は [docs/workflows/repro_discovery.md](workflows/repro_discovery.md) を参照。
 
-Phase L 以降は、`appendToCandidates=true` を有効にすると候補論文を `result/candidates/candidates.jsonl` に run 横断で蓄積できます。
+`appendToCandidates=true` を有効にすると、候補論文を `result/candidates/candidates.jsonl` に run 横断で蓄積できます。
 `candidates.xlsx` で目視確認し、`update_candidates_ledger(...)` で `reviewed` を付けると、`repro_candidates.md` に EasyMolKit 転記用の行が出力されます。
 
 ## 機関バッチ
@@ -156,9 +160,8 @@ run_smoke_tests("python")
 run_smoke_tests("all")
 ```
 
-K フェーズ関連の主要テスト:
+主要テスト:
 
-- `test_phase6a_params_smoke()`
 - `test_repro_signals_smoke()`
 - `test_analytics_smoke()`
 - `test_snowball_smoke()`
@@ -174,8 +177,6 @@ K フェーズ関連の主要テスト:
 | [docs/jp/CHANGELOG.md](CHANGELOG.md) | 変更履歴の日本語補助 |
 | [docs/reference.md](../reference.md) | 関数・smoke test リファレンス |
 | [docs/jp/reference.md](reference.md) | 関数・smoke test リファレンス（日本語補助） |
-
-詳細な開発規約とフェーズ計画は、非公開の開発リポジトリで管理しています。
 
 ## ライセンス
 

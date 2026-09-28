@@ -2,7 +2,7 @@
 
 &nbsp; [日本語](jp/quickstart.md)
 
-> Updated: 2026-07-17
+> Updated: 2026-09-29
 
 ---
 
@@ -14,7 +14,7 @@ Layer 0 (Core) alone covers the primary use case. Add Layer 1, 2 or 3 only when 
 
 | Item | Layer | Required/Optional | Notes |
 |---|---|---|---|
-| MATLAB R2025b or later | 0 | Required | |
+| MATLAB R2026b or later | 0 | Required | Required to run the core pipeline and `AnyResearchApp.mlapp` |
 | OpenAlex API Key | 0 | Required | Free — get it at [openalex.org/settings/api](https://openalex.org/settings/api) |
 | institutions.csv | 1 | Optional | CSV with institution IDs for batch runs |
 | Text Analytics Toolbox | 3 | Optional | Used for PDF text extraction |
@@ -50,8 +50,6 @@ python -m venv venv
 venv\Scripts\activate
 pip install -r src/python/requirements.txt
 ```
-
----
 
 ## Basic Usage: Keyword Search (Layer 0 only)
 
@@ -112,6 +110,33 @@ result/runs/<YYYYMMDD_HHMMSS>/
   ├─ search_results.csv     ← CSV-compatible output
   └─ run_meta.json          ← Metadata
 ```
+
+---
+
+## Optional: Graphical Interface (`AnyResearchApp.mlapp`)
+
+`AnyResearchApp.mlapp` is an alternative front end for users who prefer not to edit `.m` files. The script entry points, `main_run_pipeline.m` and `main_run_batch.m`, remain available.
+
+MATLAB R2026b or later is required to use the graphical interface, as listed in [Prerequisites](#prerequisites).
+
+### Launch the app
+
+From the repository root, double-click `AnyResearchApp.mlapp`, or run the following command in MATLAB:
+
+```matlab
+open("AnyResearchApp.mlapp")
+```
+
+### Tabs
+
+| Tab | Purpose |
+|---|---|
+| **Search** | Run a Layer 0 keyword search with date, sort, and filter options. |
+| **Batch** | Complete the Layer 1 four-step workflow: generate institution candidates, review them, promote the reviewed list, and run the batch. |
+| **Analytics & PDF** | Layer 2 citation velocity, topic growth rate, and institution dominance are automatically included in search and batch results. Configure Layer 3 PDF download, text extraction, and keyword evidence options. |
+| **Settings** | Enter and save the OpenAlex API Key in `config/settings.json`. |
+
+The Search tab writes the same `result/runs/<timestamp>/` outputs as `main_run_pipeline.m`; the Batch tab writes the same `result/batch/<timestamp>/` outputs as `main_run_batch.m`. See [Step 3. Check outputs](#step-3-check-outputs) and the batch [Step 3. Check outputs](#step-3-check-outputs-1) for the output contents.
 
 ---
 
@@ -252,7 +277,7 @@ citedByMin    = 5;
 
 This generates the same `search_results.xlsx / .jsonl / .csv` artifact set as keyword search.
 
-### Candidate Ledger (Phase L)
+### Candidate Ledger
 
 If you want to accumulate candidates across runs:
 

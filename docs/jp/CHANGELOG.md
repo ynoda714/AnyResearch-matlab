@@ -7,6 +7,15 @@
 
 ## Unreleased
 
+## 1.11.0 - 2026-09-29
+
+### 追加
+- GUI（`AnyResearchApp.mlapp`）: `.m` ファイルを編集せずに使える、
+  `main_run_pipeline.m` / `main_run_batch.m` の代替入口。Search / Batch /
+  Analytics & PDF / Settings の4タブで Layer 0〜3 をカバーする。
+  MATLAB R2026b 以降が必要。起動方法は
+  [クイックスタートガイド](../quickstart.md#4-任意-gui-anyresearchappmlapp) を参照。
+
 ## 1.10.1 - 2026-07-21
 
 ### 修正

@@ -45,9 +45,11 @@ logs/
 !CLAUDE.md
 .claude/settings.local.json
 
-# Note: files below are tracked in this dev repo but EXCLUDED from the public repo via tools/sync_to_public.ps1
+# Note: files below are tracked in this dev repo but EXCLUDED from the public repo via
+# scripts/sync_to_public.ps1 (see its $excludeDirs/$excludeFiles, and docs/adr.md ADR-003)
 # - AGENTS.md (project rules SSOT — dev only)
 # - CLAUDE.md (thin wrapper pointing to AGENTS.md)
 # - PLAN.md
-# - docs/adr.md (if created)
-# - tools/_* (internal tooling)
+# - docs/adr.md
+# - docs/release_process.md
+# - tools/ (retired; formerly the manifest+gate mechanism this sync script replaces)

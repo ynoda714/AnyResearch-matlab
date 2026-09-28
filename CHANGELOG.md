@@ -11,6 +11,16 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-09-29
+
+### Added
+- Graphical interface: `AnyResearchApp.mlapp`, an alternative front end to
+  `main_run_pipeline.m` / `main_run_batch.m` for users who prefer not to edit
+  `.m` files. Four tabs — Search, Batch, Analytics & PDF, Settings — cover
+  Layer 0 through Layer 3. Requires MATLAB R2026b or later. See the
+  [Quick Start guide](docs/quickstart.md#optional-graphical-interface-anyresearchappmlapp)
+  for launch instructions.
+
 ## [1.10.1] - 2026-07-21
 
 ### Fixed

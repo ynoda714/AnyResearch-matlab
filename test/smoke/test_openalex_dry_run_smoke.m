@@ -15,6 +15,7 @@
 %       Cases 2/3 are skipped when network is unavailable.
 
 thisDir = fileparts(mfilename('fullpath'));
+addpath(fullfile(thisDir, '..'));
 addpath(fullfile(thisDir, '..', '..', 'src', 'openalex'));
 addpath(fullfile(thisDir, '..', '..', 'src', 'util'));
 
@@ -39,8 +40,7 @@ try
     fprintf("[PASS] Case3: dryRun=true → 返却テーブルは空（height=0）\n");
 
 catch apiEx
-    if contains(apiEx.message, 'MATLAB:webservices') || contains(apiEx.message, 'urlread') ...
-            || contains(apiEx.message, 'webread') || contains(apiEx.identifier, 'MATLAB:webread')
+    if is_network_error(apiEx)
         fprintf("[SKIP] Case2/3: ネットワーク到達不可のためスキップ: %s\n", apiEx.message);
     else
         rethrow(apiEx);
@@ -59,8 +59,7 @@ try
         "Case4: filterCountryCode=JP なのに meta.filter に country_code:JP が含まれない");
     fprintf("[PASS] Case4: filterCountryCode=JP → meta.filter=%s\n", m4.filter);
 catch c4Ex
-    if contains(c4Ex.message, 'MATLAB:webservices') || contains(c4Ex.message, 'webread') ...
-            || contains(c4Ex.identifier, 'MATLAB:webread')
+    if is_network_error(c4Ex)
         fprintf("[SKIP] Case4: ネットワーク到達不可のためスキップ\n");
     else
         rethrow(c4Ex);
@@ -77,8 +76,7 @@ try
     assert(isfield(m5, 'total_count'), "Case5: meta に total_count フィールドがない");
     fprintf("[PASS] Case5: sort=cited_by_count:desc → 引数エラーなし total_count=%d\n", double(m5.total_count));
 catch c5Ex
-    if contains(c5Ex.message, 'MATLAB:webservices') || contains(c5Ex.message, 'webread') ...
-            || contains(c5Ex.identifier, 'MATLAB:webread')
+    if is_network_error(c5Ex)
         fprintf("[SKIP] Case5: ネットワーク到達不可のためスキップ\n");
     else
         rethrow(c5Ex);
