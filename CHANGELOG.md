@@ -11,6 +11,34 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-09-29
+
+### Changed
+- **GUI layout readability (all four tabs).** Labels now sit directly above
+  their input fields instead of to the left, so the eye no longer travels
+  sideways between a label and its field.
+  - **Search:** the 16 parameters are grouped into **Basic**, **Filters**
+    and **Advanced** panels. From/To dates and Minimum/Maximum citations sit
+    side by side. The form scrolls vertically on small windows while
+    **Run Search** stays visible.
+  - **Batch:** Step 1 and Step 4 use the same label-above layout.
+  - **Analytics & PDF:** PDF options are stacked in one column, and the
+    Analytics panel no longer leaves a large empty area.
+  - **Settings:** the API key field and its **Save API key** button share one row.
+- Format examples are now shown as placeholder text (for example the Search
+  query) so they are no longer mistaken for entered values. Practical defaults
+  such as language `en` and country code `JP` are unchanged.
+- Added tooltips for options that were hard to interpret: seed ID, snowball
+  mode, maximum citations, document type, country filter, dry run, and the PDF
+  options (text and keyword extraction only run when PDF download is on).
+
+### Fixed
+- Running a batch with an empty query now stops with a clear message instead
+  of failing once per institution.
+
+Breaking Changes: none
+Migration: not required
+
 ## [1.11.1] - 2026-09-29
 
 ### Fixed

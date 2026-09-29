@@ -16,6 +16,12 @@ classdef AnyResearchApp < matlab.apps.App
         SearchRunButton                 matlab.ui.control.Button
         SearchParametersPanel           matlab.ui.container.Panel
         SearchParametersGrid            matlab.ui.container.GridLayout
+        AdvancedPanel                   matlab.ui.container.Panel
+        AdvancedGrid                    matlab.ui.container.GridLayout
+        FiltersPanel                    matlab.ui.container.Panel
+        FiltersGrid                     matlab.ui.container.GridLayout
+        BasicPanel                      matlab.ui.container.Panel
+        BasicGrid                       matlab.ui.container.GridLayout
         InstitutionIdEditField          matlab.ui.control.EditField
         InstitutionIdLabel              matlab.ui.control.Label
         InstitutionEditField            matlab.ui.control.EditField
@@ -112,6 +118,9 @@ classdef AnyResearchApp < matlab.apps.App
         end
 
         function options = getBatchRunOptions(app)
+            if strlength(strtrim(string(app.BatchQueryEditField.Value))) == 0
+                error('AnyResearch:emptyBatchQuery', 'Enter a search query before running the batch.');
+            end
             options = struct('institutionsCsv', app.ReviewedInstitutionsPath, 'query', strtrim(string(app.BatchQueryEditField.Value)), ...
                 'fromDate', string(app.BatchFromDatePicker.Value, "yyyy-MM-dd"), ...
                 'toDate', string(app.BatchToDatePicker.Value, "yyyy-MM-dd"), ...
@@ -227,6 +236,10 @@ classdef AnyResearchApp < matlab.apps.App
     end
 
     methods (Access = public)
+
+        function options = getBatchRunOptionsForTesting(app)
+            options = app.getBatchRunOptions();
+        end
 
         function options = getBatchPrepareOptionsForTesting(app)
             options = app.getBatchPrepareOptions();

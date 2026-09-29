@@ -7,6 +7,29 @@
 
 ## Unreleased
 
+## 1.12.0 - 2026-09-29
+
+### 変更
+- **GUI の視認性改善（4タブすべて）。** ラベルを入力欄の左ではなく真上に配置し、
+  ラベルと入力欄の間で視線が左右に振れないようにした
+  - **Search:** 16項目を **Basic** / **Filters** / **Advanced** の3パネルに分割。
+    From/To の日付と Minimum/Maximum citations は横並び。小さい窓では縦スクロールし、
+    **Run Search** は常に見える
+  - **Batch:** Step 1・Step 4 を同じラベル上配置に変更
+  - **Analytics & PDF:** PDF オプションを1列に縦積みし、Analytics パネルの大きな空白を解消
+  - **Settings:** API key 入力欄と **Save API key** ボタンを同じ行に配置
+- 書式例（Search の Query など）を Placeholder 表示にし、入力済みの値と見分けられるようにした。
+  言語`en`・国コード`JP`のような実用上の既定値は従来どおり
+- 分かりにくかった項目にツールチップを追加: seed ID、snowball mode、maximum citations、
+  document type、country filter、dry run、PDF オプション（テキスト抽出・キーワード証跡は
+  PDF ダウンロードが有効なときだけ動く）
+
+### 修正
+- Batch を空の Query で実行した場合、機関ごとに失敗する代わりに、分かりやすいメッセージで停止するようにした
+
+破壊的変更: なし
+移行: 不要
+
 ## 1.11.1 - 2026-09-29
 
 ### 修正

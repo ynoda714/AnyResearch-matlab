@@ -38,6 +38,11 @@ assert(string(app.AnalyticsPdfTab.Title) == "Analytics & PDF");
 assert(string(app.SettingsTab.Title) == "Settings");
 assert(string(app.StatusLabel.Text) == "Ready. Configure Search and select Run Search.");
 
+% Phase W layout: a stale .mlapp built before the Search tab regrouping lacks these panels.
+assert(string(app.BasicPanel.Title) == "Basic" && string(app.FiltersPanel.Title) == "Filters" ...
+    && string(app.AdvancedPanel.Title) == "Advanced", ...
+    "The release .mlapp must be regenerated from the current src/app (Search tab groups missing).");
+
 delete(app);
 assert(~isvalid(app), "The release app must close cleanly when deleted.");
 
