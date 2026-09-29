@@ -7,6 +7,18 @@
 
 ## Unreleased
 
+## 1.11.1 - 2026-09-29
+
+### 修正
+- **`AnyResearchApp.mlapp`から実行するとSettingsタブのAPI Key保存が失敗する不具合。**
+  プロジェクトルートの解決に`mfilename('fullpath')`を使っていたが、これはパッケージ化された
+  `.mlapp`から読み込まれた場合にリポジトリを正しく指さない（`src/app/AnyResearchApp.m`を
+  直接実行した場合のみ正しく動く）ため、保存先がプロジェクト外になりエラーになっていた。
+  `which('AnyResearchApp')`経由の解決に変更し、両方の形式で正しく動くようにした。
+  同じパターンを使っていたSearch・Batchも同様のリスクがあったため同時に修正した
+- 「isolated test settings file」というメッセージが、通常の`config/settings.json`への
+  保存時にも誤って表示される不具合を修正
+
 ## 1.11.0 - 2026-09-29
 
 ### 追加

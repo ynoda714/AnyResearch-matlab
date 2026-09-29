@@ -174,7 +174,7 @@ classdef AnyResearchApp < matlab.apps.App
                 settingsPath = string(app.SettingsPathOverride);
                 return;
             end
-            projectRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+            projectRoot = AnyResearchApp.resolveProjectRoot();
             settingsPath = fullfile(projectRoot, 'config', 'settings.json');
         end
 
@@ -201,10 +201,10 @@ classdef AnyResearchApp < matlab.apps.App
             end
             writelines(settingsJson, settingsPath);
             app.ApiKeyEditField.Value = '';
-            if strlength(string(app.SettingsPathOverride)) == 0
-                app.StatusLabel.Text = 'API key saved to config/settings.json. An environment variable still takes precedence.';
-            else
+            if strlength(string(app.SettingsPathOverride)) > 0
                 app.StatusLabel.Text = 'API key saved to the isolated test settings file.';
+            else
+                app.StatusLabel.Text = 'API key saved to config/settings.json. An environment variable still takes precedence.';
             end
         end
 
@@ -286,8 +286,26 @@ classdef AnyResearchApp < matlab.apps.App
 
     methods (Static)
 
+        function projectRoot = resolveProjectRoot()
+            % mfilename('fullpath') does not resolve correctly when this
+            % class is loaded from the packaged AnyResearchApp.mlapp (it
+            % resolves to a path outside the repository), so project-root
+            % lookups must go through which() on the class name instead,
+            % which resolves correctly for both the plain-text src/app/
+            % source and the packaged .mlapp.
+            appFilePath = which('AnyResearchApp');
+            if isempty(appFilePath)
+                appFilePath = mfilename('fullpath');
+            end
+            if endsWith(lower(appFilePath), '.mlapp')
+                projectRoot = fileparts(appFilePath);
+            else
+                projectRoot = fileparts(fileparts(fileparts(appFilePath)));
+            end
+        end
+
         function candidatePath = prepareInstitutions(options)
-            projectRoot = fileparts(fileparts(fileparts(mfilename("fullpath"))));
+            projectRoot = AnyResearchApp.resolveProjectRoot();
             addpath(fullfile(projectRoot, "src", "openalex"));
             addpath(fullfile(projectRoot, "src", "config"));
             addpath(fullfile(projectRoot, "src", "util"));
@@ -297,14 +315,14 @@ classdef AnyResearchApp < matlab.apps.App
         end
 
         function result = runBatchPipeline(options)
-            projectRoot = fileparts(fileparts(fileparts(mfilename("fullpath"))));
+            projectRoot = AnyResearchApp.resolveProjectRoot();
             addpath(fullfile(projectRoot, "src", "pipeline"));
             result = run_batch_from_institutions_list(options.institutionsCsv, options.query, options.fromDate, options.toDate, ...
                 batchRootDir=options.batchRootDir, dryRun=options.dryRun);
         end
 
         function result = runSearchPipeline(searchOptions)
-            projectRoot = fileparts(fileparts(fileparts(mfilename("fullpath"))));
+            projectRoot = AnyResearchApp.resolveProjectRoot();
             addpath(fullfile(projectRoot, "src", "pipeline"));
             result = run_pipeline(searchOptions.query, searchOptions.fromDate, searchOptions.toDate, ...
                 language=searchOptions.language, requireOpenAccess=searchOptions.requireOpenAccess, ...

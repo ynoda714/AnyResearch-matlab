@@ -11,6 +11,20 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-09-29
+
+### Fixed
+- **The Settings tab's API key save failed when run from `AnyResearchApp.mlapp`.**
+  Project-root resolution relied on `mfilename('fullpath')`, which does not
+  resolve to the repository when the class is loaded from the packaged
+  `.mlapp` (only from `src/app/AnyResearchApp.m` directly), so the save
+  attempted to write outside the project and errored. Project-root
+  resolution now goes through `which('AnyResearchApp')`, which resolves
+  correctly for both forms. The same fix applies to Search and Batch, which
+  used the identical pattern and were at risk of the same failure.
+- Corrected the save-confirmation message, which showed "isolated test
+  settings file" even for a normal save to `config/settings.json`.
+
 ## [1.11.0] - 2026-09-29
 
 ### Added
