@@ -11,6 +11,22 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.12.2] - 2026-09-30
+
+### Changed
+- The status bar no longer says "Configure Search and select Run Search." when
+  the app starts; it shows a neutral "Ready." because the bar is shared by all tabs.
+
+### Documentation
+- Quickstart: documented that the Settings tab shows the API Key while it is
+  typed (a standard text field, no masking), that it is stored in plain text in
+  the Git-ignored `config/settings.json`, and that `ANYRESEARCH_OPENALEX_API_KEY`
+  avoids showing it in the app.
+
+### Accessibility
+- Each input is now associated with its visible label, so screen readers can
+  announce the label text (no visual change).
+
 ## [1.12.1] - 2026-09-30
 
 ### Changed

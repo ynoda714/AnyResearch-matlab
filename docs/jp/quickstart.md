@@ -133,6 +133,12 @@ open("AnyResearchApp.mlapp")
 
 Search タブは `main_run_pipeline.m` と同じ `result/runs/<timestamp>/` に、Batch タブは `main_run_batch.m` と同じ `result/batch/<timestamp>/` に出力します。出力内容は上記「基本実行」と下記「機関バッチ実行」の出力先を参照してください。
 
+### 4.3 API Key の取り扱い
+
+Settings タブの入力欄は標準のテキスト入力欄のため、入力中の API Key が画面にそのまま表示される。画面共有、録画、スクリーンショットにはキーが映らないようにする。
+保存後は入力欄が空になる。キーは `config/settings.json` に平文で保存され、このファイルは Git の追跡対象外である。コミットしない。
+アプリ上でキーを表示したくない場合は、代わりに `ANYRESEARCH_OPENALEX_API_KEY` を設定する。環境変数は `config/settings.json` より優先される。
+
 ---
 
 ## 5. 機関バッチ実行

@@ -36,7 +36,9 @@ assert(string(app.SearchTab.Title) == "Search");
 assert(string(app.BatchTab.Title) == "Batch");
 assert(string(app.AnalyticsPdfTab.Title) == "Analytics & PDF");
 assert(string(app.SettingsTab.Title) == "Settings");
-assert(string(app.StatusLabel.Text) == "Ready. Configure Search and select Run Search.");
+assert(string(app.StatusLabel.Text) == "Ready.");
+assert(isa(app.QueryEditField.Label, "matlab.ui.control.Label") && app.QueryEditField.Label == app.QueryLabel, ...
+    "The release .mlapp must associate inputs with their labels (regenerate it from the current src/app).");
 
 % Phase W layout: a stale .mlapp built before the Search tab regrouping lacks these panels.
 assert(string(app.BasicPanel.Title) == "Basic" && string(app.FiltersPanel.Title) == "Filters" ...

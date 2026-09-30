@@ -130,6 +130,26 @@ classdef AnyResearchApp < matlab.apps.App
                 'batchRootDir', string(fullfile(AnyResearchApp.resolveProjectRoot(), 'result', 'batch')), 'dryRun', logical(app.BatchDryRunCheckBox.Value));
         end
 
+        function associateFieldLabels(app)
+            % Associate each input with its visible label so screen readers announce the
+            % label text. The plain-text XML loader cannot resolve Label references
+            % (R2026b), so the association is made after the components exist.
+            pairs = {'QueryEditField', 'QueryLabel'; 'FromDatePicker', 'FromDateLabel'; ...
+                'ToDatePicker', 'ToDateLabel'; 'SortByDropDown', 'SortByLabel'; ...
+                'FilterTypeEditField', 'FilterTypeLabel'; 'CitedByMinField', 'CitedByMinLabel'; ...
+                'CitedByMaxField', 'CitedByMaxLabel'; 'LanguageEditField', 'LanguageLabel'; ...
+                'CountryCodeEditField', 'CountryCodeLabel'; 'SeedIdEditField', 'SeedIdLabel'; ...
+                'SnowballModeDropDown', 'SnowballModeLabel'; 'TopNField', 'TopNLabel'; ...
+                'InstitutionEditField', 'InstitutionLabel'; 'InstitutionIdEditField', 'InstitutionIdLabel'; ...
+                'TargetNamesTextArea', 'TargetNamesLabel'; 'PrepareCountryEditField', 'PrepareCountryLabel'; ...
+                'BatchQueryEditField', 'BatchQueryLabel'; 'BatchFromDatePicker', 'BatchFromDateLabel'; ...
+                'BatchToDatePicker', 'BatchToDateLabel'; 'PdfMaxRowsField', 'PdfMaxRowsLabel'; ...
+                'ApiKeyEditField', 'ApiKeyLabel'};
+            for index = 1:size(pairs, 1)
+                app.(pairs{index, 1}).Label = app.(pairs{index, 2});
+            end
+        end
+
         function tf = hasSearchQuery(app)
             % run_pipeline accepts an empty query when a seed ID starts a snowball search.
             tf = strlength(strtrim(string(app.QueryEditField.Value))) > 0 ...
@@ -464,7 +484,6 @@ classdef AnyResearchApp < matlab.apps.App
         function startupFcn(app)
             app.FromDatePicker.Value = datetime(2026, 1, 1);
             app.ToDatePicker.Value = datetime(2026, 7, 18);
-            app.StatusLabel.Text = 'Ready. Configure Search and select Run Search.';
             app.BatchFromDatePicker.Value = datetime(2025, 1, 1);
             app.BatchToDatePicker.Value = datetime(2025, 12, 31);
             projectRoot = AnyResearchApp.resolveProjectRoot();
@@ -472,6 +491,7 @@ classdef AnyResearchApp < matlab.apps.App
             app.ReviewedInstitutionsPath = string(fullfile(projectRoot, 'data', 'list', 'institutions.csv'));
             app.showBatchStep(1);
             app.CandidateTable.ColumnEditable = logical([0 0 0 0 1 1 1 0]);
+            app.associateFieldLabels();
         end
 
         % Close request function: UIFigure

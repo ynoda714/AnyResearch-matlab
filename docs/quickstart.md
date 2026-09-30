@@ -138,6 +138,12 @@ open("AnyResearchApp.mlapp")
 
 The Search tab writes the same `result/runs/<timestamp>/` outputs as `main_run_pipeline.m`; the Batch tab writes the same `result/batch/<timestamp>/` outputs as `main_run_batch.m`. See [Step 3. Check outputs](#step-3-check-outputs) and the batch [Step 3. Check outputs](#step-3-check-outputs-1) for the output contents.
 
+### API Key handling
+
+The Settings tab uses a standard text field, so your API Key is visible while you enter it. Keep it out of screen sharing, recordings, and screenshots.
+After saving, the field is cleared. The key is stored in plain text in `config/settings.json`, which is ignored by Git; do not commit this file.
+To avoid displaying the key in the app, set `ANYRESEARCH_OPENALEX_API_KEY` instead. The environment variable takes precedence over `config/settings.json`.
+
 ---
 
 ## Advanced: Multi-Institution Batch
