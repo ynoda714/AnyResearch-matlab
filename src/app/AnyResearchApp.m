@@ -33,8 +33,8 @@ classdef AnyResearchApp < matlab.apps.App
         RequireAbstractCheckBox         matlab.ui.control.CheckBox
         RequireOpenAccessCheckBox       matlab.ui.control.CheckBox
         CountryCodeEditField            matlab.ui.control.EditField
-        CountryCodeLabel                matlab.ui.control.Label
         LanguageEditField               matlab.ui.control.EditField
+        CountryCodeLabel                matlab.ui.control.Label
         LanguageLabel                   matlab.ui.control.Label
         CitedByMaxField                 matlab.ui.control.NumericEditField
         CitedByMinField                 matlab.ui.control.NumericEditField

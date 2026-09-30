@@ -11,6 +11,15 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.12.3] - 2026-09-30
+
+### Changed
+- Short inputs (dates, citation counts, language, country code, Top N, PDF limit,
+  snowball mode) are now compact and left-aligned instead of stretching across
+  half the window, so the eye no longer sweeps between a label and a far-right
+  value. Long free-text inputs (query, seed ID, institution names) keep the
+  full width. In Batch, the action buttons sit under their inputs.
+
 ## [1.12.2] - 2026-09-30
 
 ### Changed

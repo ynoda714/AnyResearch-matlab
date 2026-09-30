@@ -37,6 +37,8 @@ assert(string(app.BatchTab.Title) == "Batch");
 assert(string(app.AnalyticsPdfTab.Title) == "Analytics & PDF");
 assert(string(app.SettingsTab.Title) == "Settings");
 assert(string(app.StatusLabel.Text) == "Ready.");
+assert(isequal(app.BasicGrid.ColumnWidth, {170, 170, '1x'}), ...
+    "The release .mlapp must carry the compact short-input layout (regenerate it from the current src/app).");
 assert(isa(app.QueryEditField.Label, "matlab.ui.control.Label") && app.QueryEditField.Label == app.QueryLabel, ...
     "The release .mlapp must associate inputs with their labels (regenerate it from the current src/app).");
 
