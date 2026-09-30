@@ -7,6 +7,27 @@
 
 ## Unreleased
 
+## 1.12.1 - 2026-09-30
+
+### 変更
+- Batch: 例示の既定値（対象機関名・Query）を Search と同様に Placeholder 表示にし、入力済みの値と見分けられるようにした
+- PDF の上限ラベルを「PDF check limit (first N results)」に変更。オプションの実挙動（結果の先頭 N 件を対象にする）に合わせた
+
+### 修正
+- **Batch: Step 1 から Step 2 へ進めない不具合。** 候補テーブルが候補 CSV を受け付けていなかった
+  （文字列セル、および表に表示しない `works_count` 列が原因）。候補が読み込めるようになり、
+  レビューの保存でも全 CSV 列（`works_count` を含む）と空欄がそのまま保たれる
+- `config/settings.json` が読めない・保存先フォルダが無い場合に、API key の保存が生のエラーを出さなくなった。
+  ステータスとアラートで理由を示し、入力したキーは保持される
+- 矛盾する入力を分かりやすいメッセージで拒否: From が To より後の日付（Search・Batch）、
+  Minimum citations が Maximum citations を超える場合。Batch の日付を空にすると Search と同様に「制限なし」になる
+- Batch の dry run が「0/N institutions succeeded」ではなく dry run として表示されるようになった
+- **Search: Seed の DOI / OpenAlex work ID だけで snowball 検索を開始できるようになった。**
+  パイプラインは Query 空 + Seed ID を受け付けるのに、Run Search のガードが Query を必須にしていた
+- **Batch が MATLAB のカレントフォルダに依存しなくなった。** 候補・確定済み機関リストと Batch の出力先を
+  プロジェクトルート基準で解決する。従来はカレントがプロジェクトルート以外だと、出力が
+  カレント直下（例: `src/app/result/`）に作られることがあった
+
 ## 1.12.0 - 2026-09-29
 
 ### 変更

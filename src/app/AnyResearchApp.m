@@ -18,37 +18,37 @@ classdef AnyResearchApp < matlab.apps.App
         SearchParametersGrid            matlab.ui.container.GridLayout
         AdvancedPanel                   matlab.ui.container.Panel
         AdvancedGrid                    matlab.ui.container.GridLayout
-        FiltersPanel                    matlab.ui.container.Panel
-        FiltersGrid                     matlab.ui.container.GridLayout
-        BasicPanel                      matlab.ui.container.Panel
-        BasicGrid                       matlab.ui.container.GridLayout
         InstitutionIdEditField          matlab.ui.control.EditField
         InstitutionIdLabel              matlab.ui.control.Label
         InstitutionEditField            matlab.ui.control.EditField
         InstitutionLabel                matlab.ui.control.Label
-        CountryCodeEditField            matlab.ui.control.EditField
-        CountryCodeLabel                matlab.ui.control.Label
-        RequireAbstractCheckBox         matlab.ui.control.CheckBox
-        RequireOpenAccessCheckBox       matlab.ui.control.CheckBox
-        LanguageEditField               matlab.ui.control.EditField
-        LanguageLabel                   matlab.ui.control.Label
         TopNField                       matlab.ui.control.NumericEditField
         TopNLabel                       matlab.ui.control.Label
         SnowballModeDropDown            matlab.ui.control.DropDown
         SnowballModeLabel               matlab.ui.control.Label
         SeedIdEditField                 matlab.ui.control.EditField
         SeedIdLabel                     matlab.ui.control.Label
+        FiltersPanel                    matlab.ui.container.Panel
+        FiltersGrid                     matlab.ui.container.GridLayout
+        RequireAbstractCheckBox         matlab.ui.control.CheckBox
+        RequireOpenAccessCheckBox       matlab.ui.control.CheckBox
+        CountryCodeEditField            matlab.ui.control.EditField
+        CountryCodeLabel                matlab.ui.control.Label
+        LanguageEditField               matlab.ui.control.EditField
+        LanguageLabel                   matlab.ui.control.Label
         CitedByMaxField                 matlab.ui.control.NumericEditField
-        CitedByMaxLabel                 matlab.ui.control.Label
         CitedByMinField                 matlab.ui.control.NumericEditField
+        CitedByMaxLabel                 matlab.ui.control.Label
         CitedByMinLabel                 matlab.ui.control.Label
         FilterTypeEditField             matlab.ui.control.EditField
         FilterTypeLabel                 matlab.ui.control.Label
+        BasicPanel                      matlab.ui.container.Panel
+        BasicGrid                       matlab.ui.container.GridLayout
         SortByDropDown                  matlab.ui.control.DropDown
         SortByLabel                     matlab.ui.control.Label
         ToDatePicker                    matlab.ui.control.DatePicker
-        ToDateLabel                     matlab.ui.control.Label
         FromDatePicker                  matlab.ui.control.DatePicker
+        ToDateLabel                     matlab.ui.control.Label
         FromDateLabel                   matlab.ui.control.Label
         QueryEditField                  matlab.ui.control.EditField
         QueryLabel                      matlab.ui.control.Label
@@ -61,8 +61,8 @@ classdef AnyResearchApp < matlab.apps.App
         RunBatchButton                  matlab.ui.control.Button
         BatchDryRunCheckBox             matlab.ui.control.CheckBox
         BatchToDatePicker               matlab.ui.control.DatePicker
-        BatchToDateLabel                matlab.ui.control.Label
         BatchFromDatePicker             matlab.ui.control.DatePicker
+        BatchToDateLabel                matlab.ui.control.Label
         BatchFromDateLabel              matlab.ui.control.Label
         BatchQueryEditField             matlab.ui.control.EditField
         BatchQueryLabel                 matlab.ui.control.Label
@@ -121,13 +121,27 @@ classdef AnyResearchApp < matlab.apps.App
             if strlength(strtrim(string(app.BatchQueryEditField.Value))) == 0
                 error('AnyResearch:emptyBatchQuery', 'Enter a search query before running the batch.');
             end
+            AnyResearchApp.assertDateRange(app.BatchFromDatePicker.Value, app.BatchToDatePicker.Value);
+            fromDate = ""; if ~isnat(app.BatchFromDatePicker.Value); fromDate = string(app.BatchFromDatePicker.Value, "yyyy-MM-dd"); end
+            toDate = ""; if ~isnat(app.BatchToDatePicker.Value); toDate = string(app.BatchToDatePicker.Value, "yyyy-MM-dd"); end
             options = struct('institutionsCsv', app.ReviewedInstitutionsPath, 'query', strtrim(string(app.BatchQueryEditField.Value)), ...
-                'fromDate', string(app.BatchFromDatePicker.Value, "yyyy-MM-dd"), ...
-                'toDate', string(app.BatchToDatePicker.Value, "yyyy-MM-dd"), ...
-                'batchRootDir', "result/batch", 'dryRun', logical(app.BatchDryRunCheckBox.Value));
+                'fromDate', fromDate, ...
+                'toDate', toDate, ...
+                'batchRootDir', string(fullfile(AnyResearchApp.resolveProjectRoot(), 'result', 'batch')), 'dryRun', logical(app.BatchDryRunCheckBox.Value));
+        end
+
+        function tf = hasSearchQuery(app)
+            % run_pipeline accepts an empty query when a seed ID starts a snowball search.
+            tf = strlength(strtrim(string(app.QueryEditField.Value))) > 0 ...
+                || strlength(strtrim(string(app.SeedIdEditField.Value))) > 0;
         end
 
         function searchOptions = getSearchOptions(app)
+            AnyResearchApp.assertDateRange(app.FromDatePicker.Value, app.ToDatePicker.Value);
+            if app.CitedByMaxField.Value > 0 && app.CitedByMinField.Value > app.CitedByMaxField.Value
+                error('AnyResearch:invalidCitationRange', ...
+                    'Minimum citations must not exceed maximum citations (set the maximum to 0 for no limit).');
+            end
             fromDate = ""; if ~isnat(app.FromDatePicker.Value); fromDate = string(app.FromDatePicker.Value, "yyyy-MM-dd"); end
             toDate = ""; if ~isnat(app.ToDatePicker.Value); toDate = string(app.ToDatePicker.Value, "yyyy-MM-dd"); end
             searchOptions = struct('query', strtrim(string(app.QueryEditField.Value)), 'fromDate', fromDate, 'toDate', toDate, ...
@@ -144,14 +158,39 @@ classdef AnyResearchApp < matlab.apps.App
         end
 
         function loadCandidateReview(app)
-            candidateTable = readtable(app.BatchCandidatePath, TextType="string");
-            app.CandidateTable.Data = table2cell(candidateTable);
+            % The candidate CSV can carry columns the review table does not
+            % show (works_count), and uitable rejects string cells, so select
+            % the displayed columns by name and convert text to char.
+            candidateTable = AnyResearchApp.readCandidateCsv(app.BatchCandidatePath);
+            displayedNames = string(app.CandidateTable.ColumnName(:))';
+            missingNames = setdiff(displayedNames, string(candidateTable.Properties.VariableNames));
+            if ~isempty(missingNames)
+                error('AnyResearch:candidateColumns', ...
+                    'The candidate CSV is missing column(s): %s', strjoin(missingNames, ', '));
+            end
+            displayed = candidateTable(:, cellstr(displayedNames));
+            cells = cell(height(displayed), width(displayed));
+            for column = 1:width(displayed)
+                values = displayed.(column);
+                for row = 1:height(displayed)
+                    if displayedNames(column) == "include"
+                        cells{row, column} = AnyResearchApp.includeValue(values(row));
+                    else
+                        cells{row, column} = char(values(row));
+                    end
+                end
+            end
+            app.CandidateTable.Data = cells;
         end
 
         function onBatchRunComplete(app, result, err)
             if ~isempty(err)
                 app.StatusLabel.Text = 'Batch failed.';
                 uialert(app.UIFigure, err.message, 'Batch failed');
+                return;
+            end
+            if result.dry_run
+                app.StatusLabel.Text = sprintf('Batch dry run complete: %d/%d institutions previewed (no works fetched). Output: %s', result.dry_run_count, result.total_institutions, result.batch_dir);
                 return;
             end
             app.StatusLabel.Text = sprintf('Batch complete: %d/%d institutions succeeded. Output: %s', result.success_count, result.total_institutions, result.batch_dir);
@@ -193,22 +232,28 @@ classdef AnyResearchApp < matlab.apps.App
                 uialert(app.UIFigure, 'Enter an API key before saving.', 'API key required');
                 return;
             end
-            settingsPath = app.resolveSettingsPath();
-            if isfile(settingsPath); settings = jsondecode(fileread(settingsPath)); else; settings = struct(); end
-            if ~isfield(settings, 'openalex'); settings.openalex = struct(); end
-            settings.openalex.api_key = char(apiKey);
-            settingsJson = string(jsonencode(settings, PrettyPrint=true));
-            topLevelFields = string(fieldnames(settings));
-            for fieldIndex = 1:numel(topLevelFields)
-                fieldName = topLevelFields(fieldIndex);
-                if startsWith(fieldName, 'x_')
-                    restoredFieldName = '_' + extractAfter(fieldName, 'x_');
-                    jsonField = string(newline) + string('  ') + char(34) + fieldName + char(34) + string(':');
-                    restoredJsonField = string(newline) + string('  ') + char(34) + restoredFieldName + char(34) + string(':');
-                    settingsJson = replace(settingsJson, jsonField, restoredJsonField);
+            try
+                settingsPath = app.resolveSettingsPath();
+                if isfile(settingsPath); settings = jsondecode(fileread(settingsPath)); else; settings = struct(); end
+                if ~isfield(settings, 'openalex'); settings.openalex = struct(); end
+                settings.openalex.api_key = char(apiKey);
+                settingsJson = string(jsonencode(settings, PrettyPrint=true));
+                topLevelFields = string(fieldnames(settings));
+                for fieldIndex = 1:numel(topLevelFields)
+                    fieldName = topLevelFields(fieldIndex);
+                    if startsWith(fieldName, 'x_')
+                        restoredFieldName = '_' + extractAfter(fieldName, 'x_');
+                        jsonField = string(newline) + string('  ') + char(34) + fieldName + char(34) + string(':');
+                        restoredJsonField = string(newline) + string('  ') + char(34) + restoredFieldName + char(34) + string(':');
+                        settingsJson = replace(settingsJson, jsonField, restoredJsonField);
+                    end
                 end
+                writelines(settingsJson, settingsPath);
+            catch err
+                app.StatusLabel.Text = 'API key save failed.';
+                uialert(app.UIFigure, err.message, 'API key save failed');
+                return;
             end
-            writelines(settingsJson, settingsPath);
             app.ApiKeyEditField.Value = '';
             if strlength(string(app.SettingsPathOverride)) > 0
                 app.StatusLabel.Text = 'API key saved to the isolated test settings file.';
@@ -218,8 +263,30 @@ classdef AnyResearchApp < matlab.apps.App
         end
 
         function saveCandidateReview(app)
-            candidateTable = readtable(app.BatchCandidatePath, TextType="string");
-            candidateTable{:,:} = app.CandidateTable.Data;
+            % Write back only the reviewer-editable columns so every other CSV
+            % column (works_count included) and the row order stay untouched.
+            candidateTable = AnyResearchApp.readCandidateCsv(app.BatchCandidatePath);
+            reviewed = app.CandidateTable.Data;
+            if size(reviewed, 1) ~= height(candidateTable)
+                error('AnyResearch:candidateRows', ...
+                    'The review table has %d rows but the candidate CSV has %d.', ...
+                    size(reviewed, 1), height(candidateTable));
+            end
+            displayedNames = string(app.CandidateTable.ColumnName(:))';
+            for name = ["include", "role", "note"]
+                column = find(displayedNames == name, 1);
+                if isempty(column); continue; end
+                values = reviewed(:, column);
+                if name == "include"
+                    candidateTable.include = cellfun(@AnyResearchApp.includeValue, values);
+                else
+                    texts = strings(numel(values), 1);
+                    for row = 1:numel(values)
+                        texts(row) = string(values{row});
+                    end
+                    candidateTable.(name) = texts;
+                end
+            end
             writetable(candidateTable, app.BatchCandidatePath);
         end
 
@@ -239,6 +306,14 @@ classdef AnyResearchApp < matlab.apps.App
 
         function options = getBatchRunOptionsForTesting(app)
             options = app.getBatchRunOptions();
+        end
+
+        function onBatchRunCompleteForTesting(app, result, err)
+            app.onBatchRunComplete(result, err);
+        end
+
+        function loadCandidateReviewForTesting(app)
+            app.loadCandidateReview();
         end
 
         function options = getBatchPrepareOptionsForTesting(app)
@@ -298,6 +373,36 @@ classdef AnyResearchApp < matlab.apps.App
     end
 
     methods (Static)
+
+        function assertDateRange(fromDate, toDate)
+            % An unset (NaT) side leaves that end of the range open.
+            if ~isnat(fromDate) && ~isnat(toDate) && fromDate > toDate
+                error('AnyResearch:invalidDateRange', 'From date must not be later than To date.');
+            end
+        end
+
+        function candidateTable = readCandidateCsv(csvPath)
+            % Text columns are read as string with blanks as "" (an all-blank
+            % column such as note would otherwise become NaN doubles and be
+            % written back as "NaN"); only include and works_count are numeric.
+            importOptions = detectImportOptions(csvPath, TextType="string");
+            textVariables = setdiff(string(importOptions.VariableNames), ["include", "works_count"]);
+            importOptions = setvartype(importOptions, cellstr(textVariables), "string");
+            importOptions = setvaropts(importOptions, cellstr(textVariables), FillValue="");
+            candidateTable = readtable(csvPath, importOptions);
+        end
+
+        function value = includeValue(cellValue)
+            % Review-table include cell -> 1/0 (blank or unparsable means skip).
+            if isnumeric(cellValue) || islogical(cellValue)
+                value = double(cellValue);
+            else
+                value = str2double(string(cellValue));
+            end
+            if isempty(value) || isnan(value)
+                value = 0;
+            end
+        end
 
         function projectRoot = resolveProjectRoot()
             % mfilename('fullpath') does not resolve correctly when this
@@ -362,6 +467,9 @@ classdef AnyResearchApp < matlab.apps.App
             app.StatusLabel.Text = 'Ready. Configure Search and select Run Search.';
             app.BatchFromDatePicker.Value = datetime(2025, 1, 1);
             app.BatchToDatePicker.Value = datetime(2025, 12, 31);
+            projectRoot = AnyResearchApp.resolveProjectRoot();
+            app.BatchCandidatePath = string(fullfile(projectRoot, 'data', 'list', 'institutions_candidate.csv'));
+            app.ReviewedInstitutionsPath = string(fullfile(projectRoot, 'data', 'list', 'institutions.csv'));
             app.showBatchStep(1);
             app.CandidateTable.ColumnEditable = logical([0 0 0 0 1 1 1 0]);
         end
@@ -373,8 +481,8 @@ classdef AnyResearchApp < matlab.apps.App
 
         % Button pushed function: SearchRunButton
         function SearchRunButtonPushed(app, event)
-            if strlength(strtrim(string(app.QueryEditField.Value))) == 0
-                uialert(app.UIFigure, 'Enter a search query before running.', 'Query required');
+            if ~app.hasSearchQuery()
+                uialert(app.UIFigure, 'Enter a search query or a seed DOI / OpenAlex work ID before running.', 'Query required');
                 return;
             end
             app.SearchRunButton.Enable = 'off';

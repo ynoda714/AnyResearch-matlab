@@ -11,6 +11,34 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.12.1] - 2026-09-30
+
+### Changed
+- Batch: the example defaults (target institution names, query) are now
+  placeholders, as in Search, so they are not mistaken for entered values.
+- The PDF limit label now reads "PDF check limit (first N results)", which is
+  what the option does (it limits how many of the first results are checked).
+
+### Fixed
+- **Batch: the Step 1 -> Step 2 transition failed.** The candidate table rejected
+  the candidate CSV (text cells, and a `works_count` column the table does not
+  show). Candidates now load, and saving the review keeps every CSV column
+  (including `works_count`) and blank cells blank.
+- Saving the API key no longer raises a raw error when `config/settings.json`
+  is unreadable or its folder is missing; the status bar and an alert explain
+  the failure and the typed key is kept.
+- Contradictory inputs are rejected with a clear message: From date after To
+  date (Search and Batch) and Minimum citations above Maximum citations.
+  Unset Batch dates now mean "unrestricted", as in Search.
+- A Batch dry run is reported as a dry run instead of "0/N institutions succeeded".
+- **Search: a seed DOI / OpenAlex work ID alone now starts a snowball search.**
+  The Run Search guard required a query even when a seed ID was given, although
+  the pipeline accepts that combination.
+- **Batch no longer depends on MATLAB's current folder.** The candidate and
+  reviewed institution lists and the batch results are resolved against the
+  project root; previously results could end up under the current folder
+  (for example `src/app/result/`) when it was not the project root.
+
 ## [1.12.0] - 2026-09-29
 
 ### Changed
