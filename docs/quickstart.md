@@ -404,6 +404,9 @@ A. Since February 2026, OpenAlex requires an API Key. It is free to obtain.
 **Q. How large is the free tier?**  
 A. The free tier covers approximately $1/day of usage: ~10,000 List+Filter calls, ~1,000 Search calls, and ~100 PDF calls per day.
 
+**Q. My search stopped at 1,000 works, or the row count differs slightly from the hit count in the log.**  
+A. By default one search retrieves up to 1,000 works (10 pages of 100); narrow the date range or filters, or pass `maxPages` to `run_pipeline`, for more. OpenAlex also updates its index continuously: while the pages of one search are being retrieved, its total can change slightly, so the saved rows can differ from the initial `Total papers (count preview)` by a few percent. The saved rows are exactly what OpenAlex returned.
+
 **Q. Is an institution filter required?**  
 A. No. The tool works with just a `query=` keyword. Institution filtering is optional.
 

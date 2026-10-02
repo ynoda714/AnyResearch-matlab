@@ -43,6 +43,7 @@ cleanup1b = onCleanup(@() setenv('ANYRESEARCH_OPENALEX_API_KEY', oldEnv1b)); %#o
 assert(load_openalex_api_key(tmpSettings1b, false) == "from_json", 'T1b: JSON key not loaded');
 setenv('ANYRESEARCH_OPENALEX_API_KEY', 'from_env');
 assert(load_openalex_api_key(tmpSettings1b, false) == "from_env", 'T1b: env key did not override JSON');
+setenv('ANYRESEARCH_OPENALEX_API_KEY', oldEnv1b);  % restore now: later cases (T2+) need the real key
 fprintf(' PASS\n'); passCount = passCount + 1;
 
 %% T1c: load_openalex_api_key(required=true) -> NoApiKey
@@ -61,6 +62,7 @@ catch ex
     assert(contains(ex.identifier, 'NoApiKey'), ...
         sprintf('T1c: unexpected error id="%s"', ex.identifier));
 end
+setenv('ANYRESEARCH_OPENALEX_API_KEY', oldEnv1c);  % restore now: T2+ need the real key
 fprintf(' PASS\n'); passCount = passCount + 1;
 
 %% T2: Text file input -> v2 columns
@@ -144,7 +146,8 @@ try
         rows = T5(T5.account == names5(k) & T5.status == "found", :);
         assert(height(rows) <= 2, 'T5: maxCandidates exceeded');
         if ~isempty(rows)
-            assert(all(rows.country_code == "JP"), 'T5: non-JP row survived JP filter');
+            % Candidates without a country code are retained because their country is unknown.
+            assert(all(rows.country_code == "JP" | rows.country_code == ""), 'T5: non-JP row survived JP filter');
         end
     end
     fprintf(' PASS\n'); passCount = passCount + 1;

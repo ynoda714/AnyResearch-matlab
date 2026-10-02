@@ -64,8 +64,13 @@ while pageCount < effectiveMaxPages
         queryVals{end+1} = char(opts.searchQuery); %#ok<AGROW>
     end
     if strlength(strtrim(opts.sort)) > 0
+        sortValue = strtrim(opts.sort);
+        if sortValue == "relevance_score"
+            % OpenAlex rejects ascending relevance ("relevance_score" alone) with HTTP 400.
+            sortValue = "relevance_score:desc";
+        end
         queryKeys{end+1} = "sort"; %#ok<AGROW>
-        queryVals{end+1} = char(strtrim(opts.sort)); %#ok<AGROW>
+        queryVals{end+1} = char(sortValue); %#ok<AGROW>
     end
     if opts.mailto ~= ""
         queryKeys{end+1} = "mailto"; %#ok<AGROW>
@@ -560,11 +565,11 @@ for attempt = 1:maxRetry
         return;
     catch ex
         lastEx = ex;
-        msg = string(ex.message);
+        msg = mask_api_key(string(ex.message));
         isRetryable = contains(msg, "429") || contains(msg, "503") || ...
                       contains(msg, "Too Many Requests") || contains(msg, "Service Unavailable");
         if ~isRetryable || attempt == maxRetry
-            rethrow(ex);
+            local_throw_masked(ex);
         end
         waitSec = local_compute_retry_wait_seconds(msg, attempt, baseDelay, maxDelay, url);
         log_warn("OpenAlex API error (attempt %d/%d). Retrying in %.0f seconds: %s", ...
@@ -573,7 +578,17 @@ for attempt = 1:maxRetry
     end
 end
 if ~isempty(lastEx)
-    rethrow(lastEx);
+    local_throw_masked(lastEx);
+end
+end
+
+function local_throw_masked(ex)
+% Rethrow with the api_key removed from the message (webread embeds the full request URL).
+id = string(ex.identifier);
+if id == ""
+    id = "openalex:httpError";
+end
+throw(MException(char(id), '%s', char(mask_api_key(string(ex.message)))));
 end
 
 function waitSec = local_compute_retry_wait_seconds(msg, attempt, baseDelay, maxDelay, url)
@@ -626,7 +641,6 @@ for i = 1:numel(patterns)
         waitSec = parsed;
         return;
     end
-end
 end
 end
 

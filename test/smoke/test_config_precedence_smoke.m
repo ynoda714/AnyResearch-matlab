@@ -4,7 +4,9 @@ addpath("src/config");
 tmpDir   = fullfile(tempdir, 'smoke_config_precedence');
 if ~isfolder(tmpDir); mkdir(tmpDir); end
 cleanup  = onCleanup(@() rmdir(tmpDir, 's'));   % auto-delete directory on cleanup
-envClean = onCleanup(@() local_clear_env());     % clear env even on exception
+origApiKey  = getenv('ANYRESEARCH_OPENALEX_API_KEY');
+origPerPage = getenv('ANYRESEARCH_OPENALEX_PER_PAGE');
+envClean = onCleanup(@() local_restore_env(origApiKey, origPerPage));  % restore (not clear) the caller's env even on exception
 
 jsonPath = fullfile(tmpDir, 'test_settings.json');
 
@@ -63,7 +65,7 @@ assert(~isfield(cfg3, "x_comment") && ~isfield(cfg3, "x_priority"), ...
 fprintf("Smoke test passed: config precedence env > json > default (+ meta-key JSON)\n");
 end
 
-function local_clear_env()
-    setenv('ANYRESEARCH_OPENALEX_API_KEY', '');
-    setenv('ANYRESEARCH_OPENALEX_PER_PAGE', '');
+function local_restore_env(apiKey, perPage)
+    setenv('ANYRESEARCH_OPENALEX_API_KEY', apiKey);
+    setenv('ANYRESEARCH_OPENALEX_PER_PAGE', perPage);
 end

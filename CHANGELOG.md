@@ -11,6 +11,28 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.12.4] - 2026-10-02
+
+### Fixed
+- Searches sorted by relevance no longer fail with an OpenAlex HTTP 400 error.
+- Minimum and maximum citation filters now include their boundary values: a
+  minimum of 5 returns works with 5 or more citations, and a maximum of 5
+  returns works with 5 or fewer citations.
+- Starting a search without an OpenAlex API key now shows the intended
+  "API Key is not configured" message instead of an unrelated array-size error.
+
+### Security
+- The OpenAlex API key is no longer written to run-folder logs or shown in
+  OpenAlex request error messages in alerts and logs. Run folders created by
+  earlier versions still contain the key in `logs/settings_front_override.json`;
+  delete that file before sharing such a folder.
+
+### Documentation
+- README and Quickstart FAQ: one search retrieves up to 1,000 works by default;
+  pass `maxPages` to `run_pipeline` to retrieve more. As OpenAlex may update a
+  total while a search's pages are being retrieved, the saved row count can
+  differ slightly from the initial hit count.
+
 ## [1.12.3] - 2026-09-30
 
 ### Changed

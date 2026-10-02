@@ -78,6 +78,10 @@ result/runs/<YYYYMMDD_HHMMSS>/
   run_meta.json
 ```
 
+**About result counts**
+- One search retrieves up to **1,000 works** by default (10 pages of 100). The log line `Total papers (count preview)` shows how many works OpenAlex found; narrow the date range or filters when you need the complete set, or pass `maxPages` to `run_pipeline`.
+- OpenAlex updates its index continuously. While the pages of one search are being retrieved, its total can change slightly, so the number of saved rows can differ from the initial hit count by a few percent. The saved rows are exactly what OpenAlex returned, and running the same search again later may give a slightly different set.
+
 ### Optional: Use the graphical interface
 
 `AnyResearchApp.mlapp` in the repository root provides a graphical alternative to editing the `.m` entry points. It requires MATLAB R2026b or later; see the [GUI guide](docs/quickstart.md#optional-graphical-interface-anyresearchappmlapp) for launch instructions and details.

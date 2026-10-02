@@ -47,10 +47,11 @@ if excludeRetracted
     parts(end+1) = "is_retracted:false"; %#ok<AGROW>
 end
 if ~isempty(citedByMin) && isfinite(citedByMin) && citedByMin > 0
-    parts(end+1) = "cited_by_count:>" + string(round(citedByMin)); %#ok<AGROW>
+    % OpenAlex ">" / "<" are exclusive; shift by one so Minimum / Maximum are inclusive.
+    parts(end+1) = "cited_by_count:>" + string(round(citedByMin) - 1); %#ok<AGROW>
 end
 if ~isempty(citedByMax) && isfinite(citedByMax) && citedByMax > 0
-    parts(end+1) = "cited_by_count:<" + string(round(citedByMax)); %#ok<AGROW>
+    parts(end+1) = "cited_by_count:<" + string(round(citedByMax) + 1); %#ok<AGROW>
 end
 if strlength(strtrim(language)) > 0
     parts(end+1) = "language:" + string(language); %#ok<AGROW>

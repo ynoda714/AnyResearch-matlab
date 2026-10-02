@@ -25,6 +25,11 @@ normalMaxPages = local_get_openalex_num(cfg, "max_pages", 1);
 candidateMaxPages = local_get_openalex_num(cfg, "candidate_max_pages", normalMaxPages);
 sortVal = local_get_openalex_str(cfg, "sort", "");
 apiKey = local_get_openalex_str(cfg, "api_key", "");
+if apiKey == ""
+    % Run-log settings files intentionally carry no key; fall back to env > config/settings.json.
+    projectRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+    apiKey = load_openalex_api_key(fullfile(projectRoot, 'config', 'settings.json'), false);
+end
 
 if opts.dryRun
     [~, dryMeta] = fetch_openalex_works( ...

@@ -308,6 +308,9 @@ A. 2026年以降は必要。
 **Q. PDF 処理が不要です。**  
 A. `enablePdfDownload=false` のままでよい。
 
+**Q. 1,000 件で止まる／ログのヒット数と保存された行数が少し違う。**  
+A. 既定では 1 回の検索で最大 1,000 件（100 件 × 10 ページ）を取得する。それ以上は期間や条件を絞るか、`run_pipeline` に `maxPages` を渡す。また OpenAlex は索引を常に更新しているため、1 回の検索のページ取得中に総数が少し変わり、保存された行数がログの `Total papers (count preview)` と数 % ずれることがある。保存された行は OpenAlex が返した内容そのまま。
+
 **Q. 結果が 0 件です。**  
 A. `query` の綴り、期間、`requireOpenAccess`、`requireAbstract`、`filterCountryCode` を順に確認する。
 
