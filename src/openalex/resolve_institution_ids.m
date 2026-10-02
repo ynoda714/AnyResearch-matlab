@@ -7,6 +7,9 @@
 %   Usage:
 %     [primaryId, allIds] = resolve_institution_ids("Nagoya City University", "", [], 30)
 
+% mask_api_key lives in src/util; make sure it is callable when only src/openalex is on the path.
+addpath(fullfile(fileparts(fileparts(mfilename('fullpath'))), 'util'));
+
 primaryId = strtrim(string(currentId));
 allIds    = normalize_openalex_ids(primaryId);
 if strlength(strtrim(instName)) == 0
@@ -22,7 +25,7 @@ started = tic;
 try
     resp = webread(char(url), weboptions('Timeout', timeoutSec));
 catch ex
-    log_warn("institution id resolve failed (fallback to current setting): %s", string(ex.message));
+    log_warn("institution id resolve failed (fallback to current setting): %s", mask_api_key(string(ex.message)));
     return;
 end
 

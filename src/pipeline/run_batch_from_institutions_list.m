@@ -97,7 +97,7 @@ log_info("batch_id=%s  institutions=%d", batchId, height(targets));
 local_log_target_overview(overview, targets);
 
 %% Institution loop
-summaryRows = cell(height(targets), 7);
+summaryRows = cell(height(targets), 8);
 finalTables = cell(0, 1);
 
 
@@ -107,6 +107,7 @@ for i = 1:height(targets)
     instIdText = strjoin(instIds, "|");
     status      = "ok";
     errMsg      = "";
+    filterText  = local_build_target_filter(fromDate, toDate, instIds, options);
     rowsFetched = int32(0);
     runId       = "";
 
@@ -116,7 +117,7 @@ for i = 1:height(targets)
         if options.dryRun
             preview = local_preview_target(query, fromDate, toDate, instIds, options);
             status = "dry_run";
-            errMsg = preview.filter_text;
+            filterText = preview.filter_text;
             rowsFetched = int32(preview.total_hits);
             log_info("[DRYRUN][%s] total_hits=%d filter=%s", acc, rowsFetched, preview.filter_text);
         else
@@ -174,13 +175,13 @@ for i = 1:height(targets)
         log_error("[%s] run_pipeline failed: %s", acc, errMsg);
     end
 
-    summaryRows(i, :) = {batchId, runId, acc, instIdText, status, rowsFetched, errMsg};
+    summaryRows(i, :) = {batchId, runId, acc, instIdText, status, rowsFetched, errMsg, filterText};
 end
 
 %% Batch summary CSV output
 summaryTbl = cell2table(summaryRows, 'VariableNames', { ...
     'batch_id', 'run_id', 'institution_name', 'openalex_institution_id', ...
-    'status', 'rows_fetched', 'error_message'});
+    'status', 'rows_fetched', 'error_message', 'filter'});
 summaryPath = string(fullfile(batchDir, 'batch_summary.csv'));
 local_write_csv_utf8_bom(summaryTbl, summaryPath);
 
@@ -301,9 +302,7 @@ end
 function preview = local_preview_target(query, fromDate, toDate, institutionIds, options)
 projectRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 apiKey = load_openalex_api_key(fullfile(projectRoot, 'config', 'settings.json'), true);
-filterText = build_openalex_filter( ...
-    fromDate, toDate, options.language, options.requireOpenAccess, ...
-    institutionIds, options.filterCountryCode, options.filterType, true, true, options.citedByMin, options.citedByMax);
+filterText = local_build_target_filter(fromDate, toDate, institutionIds, options);
 [~, meta] = fetch_openalex_works( ...
     searchQuery=query, ...
     filter=filterText, ...
@@ -315,6 +314,12 @@ filterText = build_openalex_filter( ...
 preview = struct();
 preview.filter_text = filterText;
 preview.total_hits = int32(meta.total_count);
+end
+
+function filterText = local_build_target_filter(fromDate, toDate, institutionIds, options)
+filterText = build_openalex_filter( ...
+    fromDate, toDate, options.language, options.requireOpenAccess, ...
+    institutionIds, options.filterCountryCode, options.filterType, true, true, options.citedByMin, options.citedByMax);
 end
 
 function col = local_find_column(vars, candidates)

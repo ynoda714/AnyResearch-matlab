@@ -47,6 +47,36 @@ assert(string(app.BasicPanel.Title) == "Basic" && string(app.FiltersPanel.Title)
     && string(app.AdvancedPanel.Title) == "Advanced", ...
     "The release .mlapp must be regenerated from the current src/app (Search tab groups missing).");
 
+% Phase X (v1.13.0): components added after v1.12.3. A .mlapp saved before these existed lacks them
+% (or lacks the startupFcn lines that wire the buttons), so these checks make the regeneration a gate.
+regenerateHint = " (regenerate AnyResearchApp.mlapp from the current src/app)";
+assert(isa(app.MaxRecordsField, "matlab.ui.control.NumericEditField") && app.MaxRecordsField.Value == 1000 ...
+    && isequal(app.MaxRecordsField.Limits, [1 Inf]) && app.MaxRecordsField.Label == app.MaxRecordsLabel, ...
+    "The release .mlapp must carry the Max records field (default 1000, labelled)." + regenerateHint);
+assert(strcmp(app.OpenOutputButton.Text, 'Open output folder') && strcmp(app.OpenOutputButton.Enable, 'off'), ...
+    "The release .mlapp must carry the Open output folder button, disabled at start." + regenerateHint);
+assert(strcmp(app.IncludeAllButton.Text, 'Include all') && strcmp(app.IncludeNoneButton.Text, 'Include none'), ...
+    "The release .mlapp must carry the Include all / Include none buttons." + regenerateHint);
+% The three buttons are wired in startupFcn (ButtonPushedFcn assigned in code, not registered as callbacks).
+for button = [app.OpenOutputButton, app.IncludeAllButton, app.IncludeNoneButton]
+    assert(~isempty(button.ButtonPushedFcn), ...
+        "startupFcn of the release .mlapp must assign ButtonPushedFcn for '" + string(button.Text) + "'." + regenerateHint);
+end
+% ...and the code behind them exists: pressing them on an empty state must not error.
+openOutput = app.OpenOutputButton.ButtonPushedFcn;
+openOutput(app.OpenOutputButton, []);
+app.CandidateTable.Data = cell(0, 8);
+includeAll = app.IncludeAllButton.ButtonPushedFcn;
+includeAll(app.IncludeAllButton, []);
+assert(startsWith(string(app.StatusLabel.Text), "Included 0 of 0 rows"), ...
+    "Include all in the release .mlapp gave status '" + string(app.StatusLabel.Text) + "'." + regenerateHint);
+app.StatusLabel.Text = 'Ready.';
+% Start-up dates follow today (a .mlapp built before v1.13.0 starts at the old fixed dates).
+today = dateshift(datetime("now"), "start", "day");
+assert(app.ToDatePicker.Value == today && app.FromDatePicker.Value == today - calyears(1) ...
+    && app.BatchToDatePicker.Value == today && app.BatchFromDatePicker.Value == today - calyears(1), ...
+    "The release .mlapp must start with the last year up to today." + regenerateHint);
+
 delete(app);
 assert(~isvalid(app), "The release app must close cleanly when deleted.");
 

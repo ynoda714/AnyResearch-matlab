@@ -79,8 +79,10 @@ result/runs/<YYYYMMDD_HHMMSS>/
 ```
 
 **About result counts**
-- One search retrieves up to **1,000 works** by default (10 pages of 100). The log line `Total papers (count preview)` shows how many works OpenAlex found; narrow the date range or filters when you need the complete set, or pass `maxPages` to `run_pipeline`.
+- The Search tab's **Max records** field defaults to **1,000 works**. It checks the matching count first and, only when the count exceeds that limit, asks whether to fetch the first N works, all matches, or cancel. Script users can pass `maxRecords` to `run_pipeline`.
 - OpenAlex updates its index continuously. While the pages of one search are being retrieved, its total can change slightly, so the number of saved rows can differ from the initial hit count by a few percent. The saved rows are exactly what OpenAlex returned, and running the same search again later may give a slightly different set.
+
+In the graphical interface, select **Open output folder** after a successful search or batch run to open its output location.
 
 ### Optional: Use the graphical interface
 
@@ -114,6 +116,7 @@ lookup_institution_id("Example Research University")
 
 `institutions_candidate.csv` already uses the reviewed batch schema. No manual column renaming is required.  
 After reviewing `include`, save or reuse it as `data/list/institutions.csv`.
+In the Batch tab's Step 2 review table, grey rows were carried over from the current institutions list because the latest search did not return them. Use **Include all** to select every row with an OpenAlex institution ID, or **Include none** to clear the selection before saving the review.
 
 **Step 2: Run the batch**
 

@@ -308,8 +308,14 @@ A. 2026年以降は必要。
 **Q. PDF 処理が不要です。**  
 A. `enablePdfDownload=false` のままでよい。
 
-**Q. 1,000 件で止まる／ログのヒット数と保存された行数が少し違う。**  
-A. 既定では 1 回の検索で最大 1,000 件（100 件 × 10 ページ）を取得する。それ以上は期間や条件を絞るか、`run_pipeline` に `maxPages` を渡す。また OpenAlex は索引を常に更新しているため、1 回の検索のページ取得中に総数が少し変わり、保存された行数がログの `Total papers (count preview)` と数 % ずれることがある。保存された行は OpenAlex が返した内容そのまま。
+**Q. 検索結果が Max records を超えたらどうなりますか？**
+A. Run Search は最初にヒット件数を確認する。Max records（既定 1,000 件）を超える場合は、「先頭 N 件」「その回だけ全件」「キャンセル」を選べる。全件を選んでも欄の値は変わらない。OpenAlex の索引は継続的に更新されるため、保存行数が最初の件数と少し異なる場合がある。
+
+**Q. GUI で出力フォルダを開くには？**
+A. Search または Batch が正常に完了した後、ウィンドウ下部の **Open output folder** を選ぶ。
+
+**Q. Batch タブで長い機関候補リストをレビューするには？**
+A. Step 2 では、今回の検索で返らず現在の機関リストから引き継がれた行が灰色で表示される。**Include all** は OpenAlex institution ID のある全行を含め、**Include none** は全行を外す。その後レビューを保存する。
 
 **Q. 結果が 0 件です。**  
 A. `query` の綴り、期間、`requireOpenAccess`、`requireAbstract`、`filterCountryCode` を順に確認する。

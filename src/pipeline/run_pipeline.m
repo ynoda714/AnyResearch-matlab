@@ -32,6 +32,7 @@
 %
 %   [Name=Value options — Layer 0: Advanced parameters (use defaults)]
 %     maxPages                     : Maximum pages (default: 10)
+%     maxRecords                   : Maximum records (default: maxPages * 100; 1000 by default)
 %     candidateMaxPages            : Maximum candidate pages (default: 10)
 %     maxRowsForValidation         : Maximum rows for validation (default: 0 = unlimited)
 %     samplingMode                 : Sampling mode (default: "head")
@@ -87,6 +88,7 @@ arguments
     options.enableBibtex                    (1,1) logical = false
     % ── Layer 0: Advanced parameters ────────────────────────────────────────────────
     options.maxPages                        (1,1) double  = 10
+    options.maxRecords                      (1,1) double  = NaN
     options.candidateMaxPages               (1,1) double  = 10
     options.maxRowsForValidation            (1,1) double  = 0   % 0 = unlimited
     options.samplingMode                    (1,1) string  = "head"
@@ -148,6 +150,7 @@ citedByMax                   = options.citedByMax;
 seedId                       = strtrim(options.seedId);
 snowballMode                 = lower(strtrim(options.snowballMode));
 maxPages                     = options.maxPages;
+maxRecords                   = options.maxRecords;
 candidateMaxPages            = options.candidateMaxPages;
 maxRowsForValidation         = options.maxRowsForValidation;
 samplingMode                 = options.samplingMode;
@@ -176,6 +179,16 @@ pdfTextMaxBodyChars          = options.pdfTextMaxBodyChars;
 maxEvidencePerRow            = options.maxEvidencePerRow;
 useArxiv                     = options.useArxiv;
 arxivMaxResults              = options.arxivMaxResults;
+
+if isnan(maxRecords)
+    maxRecords = maxPages * 100;
+else
+    if ~isfinite(maxRecords) || maxRecords < 1 || maxRecords ~= round(maxRecords)
+        error('run_pipeline:InvalidInput', 'maxRecords must be a positive integer.');
+    end
+    maxPages = ceil(maxRecords / 100);
+    candidateMaxPages = maxPages;
+end
 
 % PDF downstream steps require pdf_download to be enabled
 if ~enablePdfDownload
@@ -217,7 +230,7 @@ filterText = build_openalex_filter( ...
     fromDate, toDate, language, requireOpenAccess, resolvedInstitutionIds, filterCountryCode, filterType, requireAbstract, excludeRetracted, citedByMin, citedByMax);
 overrideSettingsJson = string(fullfile(ctx.logs_dir, 'settings_front_override.json'));
 local_write_front_settings_json( ...
-    overrideSettingsJson, query, filterText, maxPages, candidateMaxPages, maxRowsForValidation, ...
+    overrideSettingsJson, query, filterText, maxPages, candidateMaxPages, maxRecords, maxRowsForValidation, ...
     samplingMode, mailto, firstAuthorInstitution, firstAuthorInstitutionId, ...
     resolvedInstitutionIds, firstAuthorInstitutionAliases, firstAuthorFilterMode, sortBy);
 
@@ -238,8 +251,8 @@ if showCountPreview && seedId == ""
         previewRes = fetch_and_normalize_works(overrideSettingsJson, dryRun=true);
         totalHits = int32(previewRes.total_count);
         log_info("Total papers (count preview): %d (%s to %s)", totalHits, fromDate, toDate);
-        if totalHits > maxPages * 100
-            log_warn("Large result set (maxPages=%d, perPage=100 \u2192 up to %d records). Consider narrowing the date range.", maxPages, maxPages * 100);
+        if totalHits > maxRecords
+            log_warn("Large result set (maxRecords=%d). Consider narrowing the date range.", maxRecords);
         end
     catch previewEx
         log_warn("Count preview failed (continuing): %s", previewEx.message);
@@ -257,7 +270,7 @@ try
             rawResponseDir=ctx.raw_dir);
     else
         apiRes = local_fetch_seed_mode( ...
-            seedId, snowballMode, filterText, sortBy, maxPages, ctx, saveRawResponses, mailto);
+            seedId, snowballMode, filterText, sortBy, maxPages, maxRecords, ctx, saveRawResponses, mailto);
     end
 catch ex
     % Zero-result queries: return gracefully with empty outputs instead of failing
@@ -265,9 +278,15 @@ catch ex
                 "fetch_and_normalize_works:NoValidRows"];
     if any(strcmp(ex.identifier, zeroIds))
         log_warn("Zero results returned (query=%s). Generating empty outputs.", query);
-        % Write empty JSONL / CSV
+        % Write empty artifacts with the same table schema as a completed run.
+        emptySource = table(strings(0, 1), strings(0, 1), ...
+            'VariableNames', {'title', 'abstract'});
+        emptyNormalized = openalex_to_normalized_works(emptySource, StrictValidation=false);
+        emptyFinalRes = build_final_table(emptyNormalized, query);
+        T = emptyFinalRes.T;
         fid = fopen(ctx.search_results_jsonl, 'w'); fclose(fid);
-        fid = fopen(ctx.search_results_csv,   'w'); fclose(fid);
+        local_write_csv_utf8_bom(T, ctx.search_results_csv);
+        save(ctx.search_results_mat, 'T');
         % Write minimal xlsx (empty)
         try
             emptyCfg = struct();
@@ -290,7 +309,11 @@ catch ex
             'pdf_download',        struct('status', 'skipped'), ...
             'pdf_text_extraction', struct('status', 'skipped'), ...
             'keyword_evidence',    struct('status', 'skipped'));
-zeroMeta.outputs = struct();
+        zeroMeta.outputs = struct( ...
+            'search_results_xlsx',  ctx.search_results_xlsx, ...
+            'search_results_jsonl', ctx.search_results_jsonl, ...
+            'search_results_csv',   ctx.search_results_csv, ...
+            'search_results_mat',   ctx.search_results_mat);
         write_run_meta(ctx.run_meta_json, zeroMeta);
         log_info("run_meta saved: %s", ctx.run_meta_json);
         % Build and return result struct
@@ -298,7 +321,8 @@ zeroMeta.outputs = struct();
         result.run_id      = ctx.run_id;
         result.run_dir     = ctx.run_dir;
         result.rows_fetched = int32(0);
-        result.T = table();
+        result.limit_reached = totalHits >= 0 && totalHits > maxRecords;
+        result.T = T;
         if totalHits >= 0
             result.total_hits = totalHits;
         end
@@ -307,6 +331,7 @@ zeroMeta.outputs = struct();
         end
         result.search_results_jsonl = ctx.search_results_jsonl;
         result.search_results_csv   = ctx.search_results_csv;
+        result.search_results_mat   = ctx.search_results_mat;
         return;
     end
     failMeta = struct();
@@ -616,6 +641,7 @@ result.run_id      = ctx.run_id;
 result.run_dir     = ctx.run_dir;
 result.rows_fetched = int32(apiRes.rows);
 result.T = finalTableForArtifact;
+result.limit_reached = totalHits >= 0 && totalHits > maxRecords;
 if totalHits >= 0
     result.total_hits = totalHits;
 end
@@ -659,7 +685,7 @@ end
 end
 
 function local_write_front_settings_json( ...
-        path, query, filterText, maxPages, candidateMaxPages, maxRowsForValidation, ...
+        path, query, filterText, maxPages, candidateMaxPages, maxRecords, maxRowsForValidation, ...
         samplingMode, mailto, firstAuthorInstitution, firstAuthorInstitutionId, ...
         firstAuthorInstitutionIds, firstAuthorInstitutionAliases, firstAuthorFilterMode, sortBy)
 if nargin < 14
@@ -679,6 +705,7 @@ s.openalex.api_key                       = '';  % never persisted to run logs; r
 s.openalex.per_page                      = 100;
 s.openalex.max_pages                     = round(maxPages);
 s.openalex.candidate_max_pages           = round(candidateMaxPages);
+s.openalex.max_records                   = round(maxRecords);
 s.openalex.max_rows_for_validation       = round(maxRowsForValidation);
 s.openalex.sampling_mode                 = char(strtrim(string(samplingMode)));
 s.openalex.random_seed                   = 42;
@@ -726,7 +753,7 @@ meta.snowball_mode               = snowballMode;
 meta.created_at                  = string(datetime('now', 'Format', 'yyyy-MM-dd''T''HH:mm:ss'));
 end
 
-function apiRes = local_fetch_seed_mode(seedId, snowballMode, filterText, sortBy, maxPages, ctx, saveRawResponses, mailto)
+function apiRes = local_fetch_seed_mode(seedId, snowballMode, filterText, sortBy, maxPages, maxRecords, ctx, saveRawResponses, mailto)
 apiKey = local_load_api_key_string();
 switch snowballMode
     case "citing"
@@ -759,6 +786,10 @@ end
 if height(openalexTbl) == 0
     error("fetch_and_normalize_works:NoRows", ...
         "No valid rows retrieved from OpenAlex seed traversal. mode=%s seed=%s", snowballMode, seedId);
+end
+
+if height(openalexTbl) > maxRecords
+    openalexTbl = openalexTbl(1:maxRecords, :);
 end
 
 normalizedWorks = openalex_to_normalized_works(openalexTbl, StrictValidation=false);

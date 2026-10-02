@@ -6,7 +6,7 @@ appSourceDir = fullfile(projectRoot, "src", "app");
 originalDir = pwd;
 directoryCleanup = onCleanup(@() cd(originalDir));
 clear AnyResearchApp;
-cd(appSourceDir);
+cd(app_source_dir(projectRoot));
 
 testCase = matlab.uitest.TestCase.forInteractiveUse;
 app = AnyResearchApp;
@@ -60,8 +60,8 @@ assert(isequal(logical(app.CandidateTable.ColumnEditable), ...
     logical([0 0 0 0 1 1 1 0])), ...
     "Only include, role, and note may be edited during candidate review.");
 assert(isequal(string(app.CandidateTable.ColumnName), ...
-    ["account", "openalex_institution_id", "display_name", "country_code", ...
-     "include", "role", "note", "status"]'));
+    ["account", "status", "openalex_institution_id", "display_name", ...
+     "include", "role", "note", "country_code"]'));
 
 %% Save API key through the Settings UI into an isolated settings file.
 tmpDir = fullfile(tempdir, "smoke_app_gesture");

@@ -11,6 +11,62 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-10-02
+
+### Added
+- The Search tab now has a **Max records** field (default: 1,000). Before a
+  keyword search, it checks the match count once and asks whether to fetch the
+  first N works, all matches for that run, or cancel only when the limit is
+  exceeded. Completion messages show the retrieved and matching counts when
+  the limit is reached, and explain that first-author institution searches are
+  counted before that additional filter. Fetching all does not change the
+  field value, scripts can set the per-search limit, and snowball searches skip
+  this check.
+- An **Open output folder** button at the bottom of the window becomes
+  available after a successful Search or Batch run.
+- When a DOI or OpenAlex Work ID is entered as the Search query while Seed is
+  empty, the app offers to move it to Seed, search it as a keyword, or cancel.
+- In Batch Step 2, rows carried over from the previous institution list are
+  shown in grey. **Include all** selects only rows with an institution ID, and
+  **Include none** clears every selection.
+- Batch Step 2 now reports newly found and carried-over rows and confirms when
+  a review is saved. Replacing an existing reviewed list requires confirmation
+  with the old and new included-row counts; the old list is backed up.
+- Batch summaries now include a dedicated filter column.
+- Added tooltips for Country, Language, Minimum citations, Sort, Top N,
+  First-author institution, Institution ID, and Seed.
+
+### Changed
+- Default dates in both Search and Batch are now the year ending today instead
+  of fixed calendar dates.
+- In the Batch review table, newly found rows appear first and the status
+  column is beside the account. The Institution ID field is wider, and Step 3
+  explains that only included rows are searched and that replacing an existing
+  list requires confirmation and retains a backup.
+- While an operation is running, Search, Generate, Save review, Promote, Run
+  batch, Save API key, and Back are disabled until it finishes.
+- Alerts and status messages now distinguish input problems from run failures,
+  such as by using the title **Check your input**.
+
+### Fixed
+- Legacy two-column institution lists no longer become silently excluded when
+  merged with newly generated candidates; their rows remain included.
+- Batch dry-run filters are no longer displayed as errors; they are recorded
+  separately in the batch summary.
+- Searches with no matches now create the same set of result artifacts as
+  other searches, including a header-only CSV and an empty results file.
+- Pipeline warning messages no longer display garbled arrow characters.
+
+### Security
+- OpenAlex request errors from candidate generation, institution lookup, Seed
+  resolution, reference resolution, and API usage checks now also remove the
+  API key before they are shown.
+
+### Documentation
+- README and Quickstart FAQs (English and Japanese) now document Max records
+  and its count check, the output-folder button, and the grey carried-over
+  Batch rows with **Include all** / **Include none**.
+
 ## [1.12.4] - 2026-10-02
 
 ### Fixed

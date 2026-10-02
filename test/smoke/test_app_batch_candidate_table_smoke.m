@@ -11,7 +11,7 @@ appSourceDir = fullfile(projectRoot, "src", "app");
 originalDir = pwd;
 directoryCleanup = onCleanup(@() cd(originalDir));
 clear AnyResearchApp;
-cd(appSourceDir);
+cd(app_source_dir(projectRoot));
 
 app = AnyResearchApp;
 appCleanup = onCleanup(@() local_delete_app(app));
@@ -43,10 +43,10 @@ data = app.CandidateTable.Data;
 assert(isequal(size(data), [3 8]), ...
     "The review table must show three rows and the eight displayed columns.");
 assert(isequal(string(app.CandidateTable.ColumnName(:))', ...
-    string({'account','openalex_institution_id','display_name','country_code', ...
-    'include','role','note','status'})), ...
+    string({'account','status','openalex_institution_id','display_name', ...
+    'include','role','note','country_code'})), ...
     "The review table columns must stay unchanged.");
-assert(string(data{1, 1}) == "Nagoya University" && string(data{2, 3}) == "Nagoya University Hospital");
+assert(string(data{1, 1}) == "Nagoya University" && string(data{2, 4}) == "Nagoya University Hospital");
 assert(string(data{2, 6}) == "hospital", "The proposed role must be shown in the role column.");
 assert(isempty(char(string(data{1, 7}))), "An empty note must load as an empty value, not <missing>.");
 assert(isnumeric(data{1, 5}) && data{1, 5} == 0, "The include column must load as a number.");

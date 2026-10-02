@@ -79,7 +79,9 @@ result/runs/<YYYYMMDD_HHMMSS>/
 詳しい手順は [docs/quickstart.md](quickstart.md) を参照。
 
 **検索結果の件数について**
-- 1 回の検索で取得するのは、既定では最大 **1,000 件**（100 件 × 10 ページ）。ログの `Total papers (count preview)` に OpenAlex 上のヒット数が出る。全件が必要なときは、期間や条件を絞るか、`run_pipeline` に `maxPages` を渡す。
+- Search タブの **Max records** 欄の既定値は **1,000 件**。まずヒット件数を確認し、その上限を超えるときだけ「先頭 N 件」「全件」「キャンセル」を選べる。スクリプトでは `run_pipeline` に `maxRecords` を渡せる。
+
+GUI では、検索またはバッチの完了後に **Open output folder** を選ぶと、その出力先を開けます。
 - OpenAlex は索引を常に更新している。1 回の検索でページを順に取得している間に総数が少し変わることがあり、保存された行数が最初のヒット数と数 % ずれる場合がある。保存された行は OpenAlex が返した内容そのままで、同じ検索を後でやり直すと、わずかに違う集合になることがある。
 
 ### 任意: `.m` を編集せずに GUI を使う

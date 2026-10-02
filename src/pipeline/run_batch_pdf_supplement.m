@@ -98,7 +98,7 @@ remainingPath = "";
 if ~isempty(remainingQ)
     remainingPath = string(fullfile(batchDir, 'batch_manual_pdf_queue_remaining.csv'));
     local_write_csv_utf8_bom(remainingQ, remainingPath);
-    log_info("Remaining queue (not placed): %d items \u2192 %s", height(remainingQ), remainingPath);
+    log_info("Remaining queue (not placed): %d items -> %s", height(remainingQ), remainingPath);
 end
 
 % ── Reprocess each affected run ───────────────────────────────────────
@@ -286,7 +286,7 @@ end
 
 log_info("Supplement complete: %d run(s) processed / %d manual PDF(s) detected", supplementedCount, nDetected);
 if remainingPath ~= ""
-    log_info("Remaining (not placed): %d item(s) \u2192 %s", height(remainingQ), remainingPath);
+    log_info("Remaining (not placed): %d item(s) -> %s", height(remainingQ), remainingPath);
 end
 
 end

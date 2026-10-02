@@ -23,6 +23,7 @@ firstAuthorInstitutionIds = local_resolve_first_author_ids(firstAuthorInstitutio
 firstAuthorFilterMode = lower(local_get_openalex_str(cfg, "first_author_filter_mode", "direct"));
 normalMaxPages = local_get_openalex_num(cfg, "max_pages", 1);
 candidateMaxPages = local_get_openalex_num(cfg, "candidate_max_pages", normalMaxPages);
+maxRecords = local_get_openalex_num(cfg, "max_records", Inf);
 sortVal = local_get_openalex_str(cfg, "sort", "");
 apiKey = local_get_openalex_str(cfg, "api_key", "");
 if apiKey == ""
@@ -108,6 +109,10 @@ if height(openalexTbl) == 0
     error("fetch_and_normalize_works:NoRows", ...
         "No valid rows retrieved from OpenAlex API. mode=%s candidate_rows=%d first_author_mismatch=%d", ...
         string(mode), cand, miss);
+end
+
+if height(openalexTbl) > maxRecords
+    openalexTbl = openalexTbl(1:maxRecords, :);
 end
 
 titleVals = string(openalexTbl.title);

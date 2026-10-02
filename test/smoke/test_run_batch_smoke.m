@@ -187,7 +187,7 @@ else
         Tsummary9 = readtable(r9.summary_csv, 'TextType', 'string', ...
             'VariableNamingRule', 'preserve', 'Delimiter', ',');
         expectedCols = ["batch_id", "run_id", "institution_name", ...
-                        "openalex_institution_id", "status", "rows_fetched", "error_message"];
+                        "openalex_institution_id", "status", "rows_fetched", "error_message", "filter"];
         for ci = 1:numel(expectedCols)
             assert(ismember(expectedCols(ci), string(Tsummary9.Properties.VariableNames)), ...
                 sprintf('T9: batch_summary.csv missing column "%s"', expectedCols(ci)));
@@ -259,7 +259,9 @@ else
         local_throw_if_rate_limited(Tsummary12);
         assert(isfield(r12, 'dry_run_count') && r12.dry_run_count == int32(1), 'T12: dry_run_count mismatch');
         assert(Tsummary12.status(1) == "dry_run", 'T12: summary status must be dry_run');
-        assert(strlength(Tsummary12.error_message(1)) > 0, 'T12: filter text should be recorded');
+        assert(ismissing(Tsummary12.error_message(1)) || strlength(string(Tsummary12.error_message(1))) == 0, ...
+            'T12: dry run must not write a filter to error_message');
+        assert(strlength(string(Tsummary12.filter(1))) > 0, 'T12: filter text should be recorded in filter');
         fprintf(' PASS\n');
         passCount = passCount + 1;
 

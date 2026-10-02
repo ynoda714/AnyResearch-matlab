@@ -68,7 +68,7 @@ try
     resp  = webread(char(urlStr), wopts);
 catch ex
     error('lookup_institution_id:ApiError', ...
-        'OpenAlex API call failed: %s', ex.message);
+        'OpenAlex API call failed: %s', mask_api_key(string(ex.message)));
 end
 
 % Empty result

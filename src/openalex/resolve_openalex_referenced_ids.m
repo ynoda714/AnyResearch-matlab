@@ -8,6 +8,9 @@ arguments
     opts.rawResponsePath (1,1) string = ""
 end
 
+% mask_api_key lives in src/util; make sure it is callable when only src/openalex is on the path.
+addpath(fullfile(fileparts(fileparts(mfilename('fullpath'))), 'util'));
+
 seedWorkId = resolve_openalex_seed_id(seedId, ...
     apiKey=opts.apiKey, ...
     timeoutSec=opts.timeoutSec, ...
@@ -21,7 +24,11 @@ if strlength(strtrim(opts.apiKey)) > 0
     requestUrl = requestUrl + "?api_key=" + strtrim(opts.apiKey);
 end
 
-rawJson = webread(char(requestUrl), weboptions('Timeout', opts.timeoutSec, 'ContentType', 'text'));
+try
+    rawJson = webread(char(requestUrl), weboptions('Timeout', opts.timeoutSec, 'ContentType', 'text'));
+catch ex
+    local_throw_masked(ex);
+end
 response = jsondecode(rawJson);
 referencedIds = strings(0,1);
 if isfield(response, 'referenced_works') && ~isempty(response.referenced_works)
@@ -48,4 +55,13 @@ if ~isempty(regexp(char(normalized), '^[Ww]\d+$', 'once'))
 elseif ~startsWith(lower(normalized), "https://doi.org/")
     normalized = "https://doi.org/" + normalized;
 end
+end
+
+function local_throw_masked(ex)
+% Rethrow with the api_key removed from webread's request URL message.
+id = string(ex.identifier);
+if id == ""
+    id = "openalex:httpError";
+end
+throw(MException(char(id), '%s', char(mask_api_key(string(ex.message)))));
 end

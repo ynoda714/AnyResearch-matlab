@@ -9,6 +9,7 @@ classdef AnyResearchApp < matlab.apps.App
     properties (Access = public)
         UIFigure                        matlab.ui.Figure
         RootGrid                        matlab.ui.container.GridLayout
+        OpenOutputButton                matlab.ui.control.Button
         StatusLabel                     matlab.ui.control.Label
         MainTabGroup                    matlab.ui.container.TabGroup
         SearchTab                       matlab.ui.container.Tab
@@ -22,6 +23,8 @@ classdef AnyResearchApp < matlab.apps.App
         InstitutionIdLabel              matlab.ui.control.Label
         InstitutionEditField            matlab.ui.control.EditField
         InstitutionLabel                matlab.ui.control.Label
+        MaxRecordsField                 matlab.ui.control.NumericEditField
+        MaxRecordsLabel                 matlab.ui.control.Label
         TopNField                       matlab.ui.control.NumericEditField
         TopNLabel                       matlab.ui.control.Label
         SnowballModeDropDown            matlab.ui.control.DropDown
@@ -73,6 +76,8 @@ classdef AnyResearchApp < matlab.apps.App
         BatchReviewPanel                matlab.ui.container.Panel
         BatchReviewGrid                 matlab.ui.container.GridLayout
         ReviewCandidatesButton          matlab.ui.control.Button
+        IncludeNoneButton               matlab.ui.control.Button
+        IncludeAllButton                matlab.ui.control.Button
         CandidateTable                  matlab.ui.control.Table
         BatchGeneratePanel              matlab.ui.container.Panel
         BatchGenerateGrid               matlab.ui.container.GridLayout
@@ -107,6 +112,13 @@ classdef AnyResearchApp < matlab.apps.App
         BatchStep = 1
         ReviewedInstitutionsPath = "data/list/institutions.csv"
         SettingsPathOverride
+        PromotionConfirmAnswer = []   % empty: ask; true/false: answer given by a test
+        SeedHintAnswer = []           % empty: ask; "move"/"keyword"/"cancel": answer given by a test
+        CountPreviewForTesting = []   % empty: call preview_search_count
+        SearchRunnerForTesting = []   % empty: call runSearchPipeline
+        LimitAnswerForTesting = []    % empty: ask with uiconfirm
+        LastOutputFolder = ""
+        FolderOpener = []             % empty: call the operating system
     end
 
     methods (Access = private)
@@ -140,6 +152,7 @@ classdef AnyResearchApp < matlab.apps.App
                 'CitedByMaxField', 'CitedByMaxLabel'; 'LanguageEditField', 'LanguageLabel'; ...
                 'CountryCodeEditField', 'CountryCodeLabel'; 'SeedIdEditField', 'SeedIdLabel'; ...
                 'SnowballModeDropDown', 'SnowballModeLabel'; 'TopNField', 'TopNLabel'; ...
+                'MaxRecordsField', 'MaxRecordsLabel'; ...
                 'InstitutionEditField', 'InstitutionLabel'; 'InstitutionIdEditField', 'InstitutionIdLabel'; ...
                 'TargetNamesTextArea', 'TargetNamesLabel'; 'PrepareCountryEditField', 'PrepareCountryLabel'; ...
                 'BatchQueryEditField', 'BatchQueryLabel'; 'BatchFromDatePicker', 'BatchFromDateLabel'; ...
@@ -156,6 +169,85 @@ classdef AnyResearchApp < matlab.apps.App
                 || strlength(strtrim(string(app.SeedIdEditField.Value))) > 0;
         end
 
+        function proceed = confirmSeedLikeQuery(app)
+            query = strtrim(string(app.QueryEditField.Value));
+            seedId = strtrim(string(app.SeedIdEditField.Value));
+            if ~AnyResearchApp.looksLikeSeedId(query) || strlength(seedId) > 0
+                proceed = true;
+                return;
+            end
+
+            if isempty(app.SeedHintAnswer)
+                choice = uiconfirm(app.UIFigure, ...
+                    ['This looks like a DOI or OpenAlex Work ID. Put it in the Seed field to fetch works ' ...
+                    'citing it or its referenced works. Searching it as a keyword often returns only one unrelated result.'], ...
+                    'Use Seed field?', 'Options', {'Move to Seed field', 'Search as keyword', 'Cancel'}, ...
+                    'DefaultOption', 1, 'CancelOption', 3, 'Icon', 'warning');
+            else
+                choice = app.SeedHintAnswer;
+            end
+
+            switch string(choice)
+                case {"Move to Seed field", "move"}
+                    app.SeedIdEditField.Value = char(query);
+                    app.QueryEditField.Value = '';
+                    app.StatusLabel.Text = 'Moved to the Seed field. Choose Snowball mode (citing or referenced), then run the search.';
+                    proceed = false;
+                case {"Search as keyword", "keyword"}
+                    proceed = true;
+                otherwise
+                    proceed = false;
+            end
+        end
+
+        function setBusy(app, tf)
+            buttonNames = ["SearchRunButton", "GenerateCandidatesButton", "ReviewCandidatesButton", ...
+                "PromoteCandidatesButton", "RunBatchButton", "SaveApiKeyButton"];
+            if tf
+                value = 'off';
+            else
+                value = 'on';
+            end
+            for name = buttonNames
+                app.(name).Enable = value;
+            end
+            if tf
+                app.BatchBackButton.Enable = 'off';
+            else
+                app.showBatchStep(app.BatchStep);
+            end
+        end
+
+        function restoreIdleAfterBusyError(app)
+            app.setBusy(false);
+        end
+
+        function rememberOutputFolder(app, folder)
+            app.LastOutputFolder = string(folder);
+            app.OpenOutputButton.Enable = 'on';
+            app.OpenOutputButton.Tooltip = "Open the output folder: " + app.LastOutputFolder;
+        end
+
+        function openOutputFolder(app)
+            folder = string(app.LastOutputFolder);
+            if strlength(folder) == 0
+                return;
+            end
+            if ~isfolder(folder)
+                app.StatusLabel.Text = "Output folder not found: " + folder;
+                return;
+            end
+            try
+                if isempty(app.FolderOpener)
+                    AnyResearchApp.openFolderInOs(folder);
+                else
+                    app.FolderOpener(folder);
+                end
+            catch err
+                app.StatusLabel.Text = "Could not open the output folder: " + string(err.message);
+            end
+        end
+
         function searchOptions = getSearchOptions(app)
             AnyResearchApp.assertDateRange(app.FromDatePicker.Value, app.ToDatePicker.Value);
             if app.CitedByMaxField.Value > 0 && app.CitedByMinField.Value > app.CitedByMaxField.Value
@@ -170,7 +262,8 @@ classdef AnyResearchApp < matlab.apps.App
                 'sortBy', string(app.SortByDropDown.Value), 'filterType', strtrim(string(app.FilterTypeEditField.Value)), ...
                 'citedByMin', double(app.CitedByMinField.Value), 'citedByMax', double(app.CitedByMaxField.Value), ...
                 'seedId', strtrim(string(app.SeedIdEditField.Value)), 'snowballMode', string(app.SnowballModeDropDown.Value), ...
-                'topN', double(app.TopNField.Value), 'firstAuthorInstitution', strtrim(string(app.InstitutionEditField.Value)), ...
+                'topN', double(app.TopNField.Value), 'maxRecords', double(app.MaxRecordsField.Value), ...
+                'firstAuthorInstitution', strtrim(string(app.InstitutionEditField.Value)), ...
                 'firstAuthorInstitutionId', strtrim(string(app.InstitutionIdEditField.Value)), ...
                 'enablePdfDownload', logical(app.EnablePdfDownloadCheckBox.Value), 'pdfMaxRows', double(app.PdfMaxRowsField.Value), ...
                 'enablePdfTextExtraction', logical(app.EnablePdfTextCheckBox.Value), ...
@@ -201,14 +294,57 @@ classdef AnyResearchApp < matlab.apps.App
                 end
             end
             app.CandidateTable.Data = cells;
+            app.styleCarriedRows(candidateTable);
+        end
+
+        function styleCarriedRows(app, candidateTable)
+            removeStyle(app.CandidateTable);
+            carriedRows = find(AnyResearchApp.carriedCandidateMask(candidateTable));
+            if isempty(carriedRows)
+                return;
+            end
+            carriedStyle = uistyle('FontColor', [0.65 0.65 0.65]);
+            addStyle(app.CandidateTable, carriedStyle, 'row', carriedRows);
+        end
+
+        function setAllInclude(app, tf)
+            data = app.CandidateTable.Data;
+            total = size(data, 1);
+            columnNames = string(app.CandidateTable.ColumnName(:))';
+            includeColumn = find(columnNames == "include", 1);
+            idColumn = find(columnNames == "openalex_institution_id", 1);
+            included = 0;
+            for row = 1:total
+                if tf && strlength(strtrim(string(data{row, idColumn}))) > 0
+                    data{row, includeColumn} = 1;
+                    included = included + 1;
+                else
+                    data{row, includeColumn} = 0;
+                end
+            end
+            app.CandidateTable.Data = data;
+            status = sprintf('Included %d of %d rows.', included, total);
+            if tf && included < total
+                status = status + " Rows without an OpenAlex institution ID were left out.";
+            end
+            app.StatusLabel.Text = status;
+        end
+
+        function [newRows, carriedRows] = countCandidateRows(app)
+            candidateTable = AnyResearchApp.readCandidateCsv(app.BatchCandidatePath);
+            carriedMask = AnyResearchApp.carriedCandidateMask(candidateTable);
+            newRows = nnz(~carriedMask);
+            carriedRows = nnz(carriedMask);
         end
 
         function onBatchRunComplete(app, result, err)
             if ~isempty(err)
-                app.StatusLabel.Text = 'Batch failed.';
-                uialert(app.UIFigure, err.message, 'Batch failed');
+                failure = AnyResearchApp.describeFailure(err, "Batch");
+                app.StatusLabel.Text = failure.status;
+                uialert(app.UIFigure, err.message, failure.title);
                 return;
             end
+            app.rememberOutputFolder(result.batch_dir);
             if result.dry_run
                 app.StatusLabel.Text = sprintf('Batch dry run complete: %d/%d institutions previewed (no works fetched). Output: %s', result.dry_run_count, result.total_institutions, result.batch_dir);
                 return;
@@ -224,17 +360,56 @@ classdef AnyResearchApp < matlab.apps.App
             end
             app.BatchCandidatePath = string(result);
             app.loadCandidateReview();
-            app.StatusLabel.Text = 'Candidates generated. Review the include, role, and note columns.';
+            [newRows, carriedRows] = app.countCandidateRows();
+            app.StatusLabel.Text = sprintf('Candidates generated: %d new rows, %d carried over from the current list. Review include, role and note.', newRows, carriedRows);
             app.showBatchStep(2);
         end
 
-        function onSearchComplete(app, result, err)
+        function onSearchComplete(app, result, err, searchOptions)
+            if nargin < 4
+                searchOptions = struct();
+            end
             if ~isempty(err)
-                app.StatusLabel.Text = 'Search failed.';
-                uialert(app.UIFigure, err.message, 'Search failed');
+                failure = AnyResearchApp.describeFailure(err, "Search");
+                app.StatusLabel.Text = failure.status;
+                uialert(app.UIFigure, err.message, failure.title);
                 return;
             end
-            app.StatusLabel.Text = sprintf('Search complete: %d works. Output: %s', result.rows_fetched, result.run_dir);
+            app.rememberOutputFolder(result.run_dir);
+            app.StatusLabel.Text = sprintf('Search complete: %s. Output: %s', ...
+                AnyResearchApp.describeSearchSummary(result, searchOptions), result.run_dir);
+        end
+
+        function preview = getSearchCountPreview(app, searchOptions)
+            if isempty(app.CountPreviewForTesting)
+                preview = AnyResearchApp.previewSearchCount(searchOptions);
+                return;
+            end
+            try
+                preview = app.CountPreviewForTesting(searchOptions);
+            catch err
+                preview = struct('ok', false, 'total', NaN, 'message', string(err.message));
+            end
+        end
+
+        function answer = getLimitAnswer(app, maxRecords, total)
+            if ~isempty(app.LimitAnswerForTesting)
+                answer = string(app.LimitAnswerForTesting);
+                return;
+            end
+            limitLabel = sprintf('Fetch first %d', maxRecords);
+            allLabel = sprintf('Fetch all %d', total);
+            choice = uiconfirm(app.UIFigure, ...
+                sprintf('%d works match this search. Choose how many to fetch.', total), ...
+                'Search result limit', 'Options', {limitLabel, allLabel, 'Cancel'}, ...
+                'DefaultOption', 1, 'CancelOption', 3, 'Icon', 'warning');
+            if strcmp(choice, limitLabel)
+                answer = "limit";
+            elseif strcmp(choice, allLabel)
+                answer = "all";
+            else
+                answer = "cancel";
+            end
         end
 
         function settingsPath = resolveSettingsPath(app)
@@ -279,6 +454,26 @@ classdef AnyResearchApp < matlab.apps.App
                 app.StatusLabel.Text = 'API key saved to the isolated test settings file.';
             else
                 app.StatusLabel.Text = 'API key saved to config/settings.json. An environment variable still takes precedence.';
+            end
+        end
+
+        function tf = confirmPromotion(app)
+            % Promoting overwrites the reviewed institutions list. Ask first when a list
+            % already exists (the first promotion has nothing to lose).
+            summary = AnyResearchApp.describePromotion(app.BatchCandidatePath, app.ReviewedInstitutionsPath);
+            if ~summary.replacesExisting
+                tf = true;
+                return;
+            end
+            if ~isempty(app.PromotionConfirmAnswer)
+                tf = logical(app.PromotionConfirmAnswer);
+            else
+                choice = uiconfirm(app.UIFigure, char(summary.message), 'Replace institutions list?', ...
+                    'Options', {'Promote', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
+                tf = strcmp(choice, 'Promote');
+            end
+            if ~tf
+                app.StatusLabel.Text = 'Promotion cancelled. The institutions list was not changed.';
             end
         end
 
@@ -332,6 +527,14 @@ classdef AnyResearchApp < matlab.apps.App
             app.onBatchRunComplete(result, err);
         end
 
+        function onPrepareInstitutionsCompleteForTesting(app, result, err)
+            app.onPrepareInstitutionsComplete(result, err);
+        end
+
+        function onSearchCompleteForTesting(app, result, err)
+            app.onSearchComplete(result, err);
+        end
+
         function loadCandidateReviewForTesting(app)
             app.loadCandidateReview();
         end
@@ -342,6 +545,42 @@ classdef AnyResearchApp < matlab.apps.App
 
         function searchOptions = getSearchOptionsForTesting(app)
             searchOptions = app.getSearchOptions();
+        end
+
+        function summary = describePromotionForTesting(app)
+            summary = AnyResearchApp.describePromotion(app.BatchCandidatePath, app.ReviewedInstitutionsPath);
+        end
+
+        function setPromotionConfirmForTesting(app, answer)
+            app.PromotionConfirmAnswer = answer;
+        end
+
+        function setSeedHintAnswerForTesting(app, answer)
+            app.SeedHintAnswer = answer;
+        end
+
+        function setCountPreviewForTesting(app, fn)
+            app.CountPreviewForTesting = fn;
+        end
+
+        function setSearchRunnerForTesting(app, fn)
+            app.SearchRunnerForTesting = fn;
+        end
+
+        function setLimitAnswerForTesting(app, answer)
+            app.LimitAnswerForTesting = answer;
+        end
+
+        function setFolderOpenerForTesting(app, fn)
+            app.FolderOpener = fn;
+        end
+
+        function proceed = confirmSeedLikeQueryForTesting(app)
+            proceed = app.confirmSeedLikeQuery();
+        end
+
+        function setBusyForTesting(app, tf)
+            app.setBusy(tf);
         end
 
         function promoteCandidatesForTesting(app)
@@ -394,11 +633,130 @@ classdef AnyResearchApp < matlab.apps.App
 
     methods (Static)
 
+        function openFolderInOs(folderPath)
+            folderPath = char(string(folderPath));
+            if ispc
+                winopen(folderPath);
+                return;
+            end
+            quotedPath = ['"' strrep(folderPath, '"', '\\"') '"'];
+            if ismac
+                [status, message] = system(['open ' quotedPath]);
+            else
+                [status, message] = system(['xdg-open ' quotedPath]);
+            end
+            if status ~= 0
+                error('AnyResearch:openOutputFolder', '%s', strtrim(message));
+            end
+        end
+
+        function period = defaultPeriod(asOf)
+            toDate = dateshift(asOf, 'start', 'day');
+            period = struct('from', toDate - calyears(1), 'to', toDate);
+        end
+
         function assertDateRange(fromDate, toDate)
             % An unset (NaT) side leaves that end of the range open.
             if ~isnat(fromDate) && ~isnat(toDate) && fromDate > toDate
                 error('AnyResearch:invalidDateRange', 'From date must not be later than To date.');
             end
+        end
+
+        function info = describeFailure(err, kind)
+            kind = string(kind);
+            inputErrorIds = ["AnyResearch:invalidDateRange", ...
+                "AnyResearch:invalidCitationRange", "AnyResearch:emptyBatchQuery"];
+            if ismember(string(err.identifier), inputErrorIds)
+                info = struct('title', "Check your input", 'status', "Check your input.");
+            else
+                info = struct('title', kind + " failed", 'status', kind + " failed.");
+            end
+        end
+
+        function preview = previewSearchCount(searchOptions)
+            preview = struct('ok', false, 'total', NaN, 'message', "");
+            try
+                projectRoot = AnyResearchApp.resolveProjectRoot();
+                addpath(fullfile(projectRoot, "src", "pipeline"));
+                raw = preview_search_count(searchOptions.query, searchOptions.fromDate, searchOptions.toDate, ...
+                    language=searchOptions.language, requireOpenAccess=searchOptions.requireOpenAccess, ...
+                    requireAbstract=searchOptions.requireAbstract, filterCountryCode=searchOptions.filterCountryCode, ...
+                    filterType=searchOptions.filterType, citedByMin=searchOptions.citedByMin, ...
+                    citedByMax=searchOptions.citedByMax, ...
+                    firstAuthorInstitutionId=searchOptions.firstAuthorInstitutionId);
+                preview = struct('ok', true, 'total', double(raw.total_hits), 'message', "");
+            catch err
+                preview.message = string(err.message);
+            end
+        end
+
+        function summary = describeSearchSummary(result, searchOptions)
+            rows = double(result.rows_fetched);
+            hasTotal = isfield(result, 'total_hits') && isfinite(double(result.total_hits));
+            if hasTotal
+                total = double(result.total_hits);
+            else
+                total = NaN;
+            end
+            limitReached = isfield(result, 'limit_reached') && logical(result.limit_reached);
+            hasInstitution = isfield(searchOptions, 'firstAuthorInstitution') && ...
+                strlength(strtrim(string(searchOptions.firstAuthorInstitution))) > 0;
+            hasInstitutionId = isfield(searchOptions, 'firstAuthorInstitutionId') && ...
+                strlength(strtrim(string(searchOptions.firstAuthorInstitutionId))) > 0;
+            if hasInstitution || hasInstitutionId
+                if limitReached && hasTotal
+                    summary = sprintf('%d works (limit reached: not all of the %d matches were checked against the first-author institution)', rows, total);
+                elseif hasTotal
+                    summary = sprintf('%d works (OpenAlex matched %d before the first-author filter)', rows, total);
+                else
+                    summary = sprintf('%d works', rows);
+                end
+            elseif limitReached && hasTotal
+                summary = sprintf('%d of %d works (limit reached)', rows, total);
+            else
+                summary = sprintf('%d works', rows);
+            end
+        end
+
+        function tf = looksLikeSeedId(text)
+            text = strtrim(string(text));
+            doiPattern = '^(?:doi:|https://doi\.org/|http://dx\.doi\.org/)?10\.\d{4,9}/\S+$';
+            workIdPattern = '^(?:https://openalex\.org/)?W\d{6,}$';
+            tf = ~isempty(regexp(text, doiPattern, 'once', 'ignorecase')) ...
+                || ~isempty(regexp(text, workIdPattern, 'once', 'ignorecase'));
+        end
+
+        function summary = describePromotion(candidatePath, reviewedPath)
+            % What promoting will do to an existing reviewed list: how many institutions are
+            % included in the new list and in the current one (a legacy two-column file counts
+            % every row as included, as the batch does).
+            projectRoot = AnyResearchApp.resolveProjectRoot();
+            addpath(fullfile(projectRoot, "src", "openalex"));
+            candidate = AnyResearchApp.readCandidateCsv(candidatePath);
+            newIncluded = nnz(arrayfun(@AnyResearchApp.includeValue, candidate.include) > 0);
+            summary = struct('replacesExisting', isfile(reviewedPath), 'newIncluded', newIncluded, ...
+                'currentIncluded', 0, 'currentIsLegacy', false, 'message', "");
+            if ~summary.replacesExisting
+                return;
+            end
+            try
+                [current, isLegacy] = read_institutions_review_csv(reviewedPath);
+                summary.currentIncluded = nnz(arrayfun(@AnyResearchApp.includeValue, current.include) > 0);
+                summary.currentIsLegacy = isLegacy;
+            catch
+                summary.currentIncluded = -1;   % unreadable: still ask before replacing it
+            end
+            if summary.currentIncluded < 0
+                currentText = "an unreadable list";
+            else
+                currentText = string(summary.currentIncluded) + " in the current list";
+                if summary.currentIsLegacy
+                    currentText = currentText + " (the old list format counts every row as included)";
+                end
+            end
+            summary.message = "This replaces the current institutions list:" + newline + string(reviewedPath) + newline + newline + ...
+                "Included institutions: " + newIncluded + " in the new list, " + currentText + "." + newline + ...
+                "The current file is saved as a backup copy (.bak) first.";
         end
 
         function candidateTable = readCandidateCsv(csvPath)
@@ -410,6 +768,10 @@ classdef AnyResearchApp < matlab.apps.App
             importOptions = setvartype(importOptions, cellstr(textVariables), "string");
             importOptions = setvaropts(importOptions, cellstr(textVariables), FillValue="");
             candidateTable = readtable(csvPath, importOptions);
+        end
+
+        function mask = carriedCandidateMask(candidateTable)
+            mask = contains(string(candidateTable.note), "not returned by API on");
         end
 
         function value = includeValue(cellValue)
@@ -470,9 +832,14 @@ classdef AnyResearchApp < matlab.apps.App
                 seedId=searchOptions.seedId, snowballMode=searchOptions.snowballMode, topN=searchOptions.topN, ...
                 firstAuthorInstitution=searchOptions.firstAuthorInstitution, ...
                 firstAuthorInstitutionId=searchOptions.firstAuthorInstitutionId, ...
+                maxRecords=searchOptions.maxRecords, showCountPreview=false, ...
                 enablePdfDownload=searchOptions.enablePdfDownload, pdfMaxRows=searchOptions.pdfMaxRows, ...
                 enablePdfTextExtraction=searchOptions.enablePdfTextExtraction, ...
                 enableKeywordEvidence=searchOptions.enableKeywordEvidence);
+            if isfield(searchOptions, 'previewTotal') && isfinite(searchOptions.previewTotal)
+                result.total_hits = int32(searchOptions.previewTotal);
+                result.limit_reached = searchOptions.previewTotal > searchOptions.maxRecords;
+            end
         end
 
     end
@@ -482,16 +849,20 @@ classdef AnyResearchApp < matlab.apps.App
 
         % Code that executes after component creation
         function startupFcn(app)
-            app.FromDatePicker.Value = datetime(2026, 1, 1);
-            app.ToDatePicker.Value = datetime(2026, 7, 18);
-            app.BatchFromDatePicker.Value = datetime(2025, 1, 1);
-            app.BatchToDatePicker.Value = datetime(2025, 12, 31);
+            period = AnyResearchApp.defaultPeriod(datetime('now'));
+            app.FromDatePicker.Value = period.from;
+            app.ToDatePicker.Value = period.to;
+            app.BatchFromDatePicker.Value = period.from;
+            app.BatchToDatePicker.Value = period.to;
             projectRoot = AnyResearchApp.resolveProjectRoot();
             app.BatchCandidatePath = string(fullfile(projectRoot, 'data', 'list', 'institutions_candidate.csv'));
             app.ReviewedInstitutionsPath = string(fullfile(projectRoot, 'data', 'list', 'institutions.csv'));
             app.showBatchStep(1);
             app.CandidateTable.ColumnEditable = logical([0 0 0 0 1 1 1 0]);
             app.associateFieldLabels();
+            app.OpenOutputButton.ButtonPushedFcn = @(~, ~) app.openOutputFolder();
+            app.IncludeAllButton.ButtonPushedFcn = @(~, ~) app.setAllInclude(true);
+            app.IncludeNoneButton.ButtonPushedFcn = @(~, ~) app.setAllInclude(false);
         end
 
         % Close request function: UIFigure
@@ -505,21 +876,51 @@ classdef AnyResearchApp < matlab.apps.App
                 uialert(app.UIFigure, 'Enter a search query or a seed DOI / OpenAlex work ID before running.', 'Query required');
                 return;
             end
-            app.SearchRunButton.Enable = 'off';
+            if ~app.confirmSeedLikeQuery()
+                return;
+            end
+            app.setBusy(true);
+            busyCleanup = onCleanup(@() app.restoreIdleAfterBusyError());
             app.StatusLabel.Text = 'Search is running...';
             drawnow;
             try
-                result = AnyResearchApp.runSearchPipeline(app.getSearchOptions());
-                app.onSearchComplete(result, []);
+                searchOptions = app.getSearchOptions();
+                cancelled = false;
+                if searchOptions.seedId == ""
+                    preview = app.getSearchCountPreview(searchOptions);
+                    if preview.ok && isfinite(preview.total)
+                        searchOptions.previewTotal = double(preview.total);
+                        if preview.total > searchOptions.maxRecords
+                            answer = app.getLimitAnswer(searchOptions.maxRecords, preview.total);
+                            switch answer
+                                case "all"
+                                    searchOptions.maxRecords = double(preview.total);
+                                case "cancel"
+                                    cancelled = true;
+                            end
+                        end
+                    end
+                end
+                if cancelled
+                    app.StatusLabel.Text = 'Search cancelled before fetching works.';
+                elseif isempty(app.SearchRunnerForTesting)
+                    result = AnyResearchApp.runSearchPipeline(searchOptions);
+                    app.onSearchComplete(result, [], searchOptions);
+                else
+                    result = app.SearchRunnerForTesting(searchOptions);
+                    app.onSearchComplete(result, [], searchOptions);
+                end
             catch err
                 app.onSearchComplete([], err);
             end
-            app.SearchRunButton.Enable = 'on';
+            app.setBusy(false);
+            if ~isempty(busyCleanup); clear busyCleanup; end
         end
 
         % Button pushed function: GenerateCandidatesButton
         function GenerateCandidatesButtonPushed(app, event)
-            app.GenerateCandidatesButton.Enable = 'off';
+            app.setBusy(true);
+            busyCleanup = onCleanup(@() app.restoreIdleAfterBusyError());
             app.StatusLabel.Text = 'Generating institution candidates...';
             drawnow;
             try
@@ -528,7 +929,8 @@ classdef AnyResearchApp < matlab.apps.App
             catch err
                 app.onPrepareInstitutionsComplete([], err);
             end
-            app.GenerateCandidatesButton.Enable = 'on';
+            app.setBusy(false);
+            if ~isempty(busyCleanup); clear busyCleanup; end
         end
 
         % Button pushed function: ReviewCandidatesButton
@@ -538,6 +940,7 @@ classdef AnyResearchApp < matlab.apps.App
                 return;
             end
             app.saveCandidateReview();
+            app.StatusLabel.Text = 'Review saved. Promote the reviewed candidates to use them in a batch run.';
             app.showBatchStep(3);
         end
 
@@ -548,6 +951,9 @@ classdef AnyResearchApp < matlab.apps.App
                 return;
             end
             app.saveCandidateReview();
+            if ~app.confirmPromotion()
+                return;
+            end
             promote_reviewed_institutions_csv(app.BatchCandidatePath, app.ReviewedInstitutionsPath);
             app.StatusLabel.Text = 'Reviewed institutions promoted.';
             app.showBatchStep(4);
@@ -559,7 +965,8 @@ classdef AnyResearchApp < matlab.apps.App
                 uialert(app.UIFigure, 'Promote reviewed candidates before running the batch.', 'Institutions required');
                 return;
             end
-            app.RunBatchButton.Enable = 'off';
+            app.setBusy(true);
+            busyCleanup = onCleanup(@() app.restoreIdleAfterBusyError());
             app.StatusLabel.Text = 'Batch is running...';
             drawnow;
             try
@@ -568,7 +975,8 @@ classdef AnyResearchApp < matlab.apps.App
             catch err
                 app.onBatchRunComplete([], err);
             end
-            app.RunBatchButton.Enable = 'on';
+            app.setBusy(false);
+            if ~isempty(busyCleanup); clear busyCleanup; end
         end
 
         % Button pushed function: BatchBackButton

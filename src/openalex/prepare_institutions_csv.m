@@ -108,7 +108,7 @@ for k = 1:nNames
     try
         resp = webread(char(urlStr), wopts);
     catch ex
-        log_warn('API error for "%s": %s', nm, ex.message);
+        log_warn('API error for "%s": %s', nm, mask_api_key(string(ex.message)));
         [rowAccount, rowId, rowDispName, rowCountry, rowWorks, rowInclude, rowRole, rowNote, rowStatus] = ...
             local_append_row(rowAccount, rowId, rowDispName, rowCountry, rowWorks, ...
             rowInclude, rowRole, rowNote, rowStatus, nm, "", "", "", 0, 0, "", "", "api_error");
@@ -187,7 +187,7 @@ if strlength(mergePath) > 0
         outTable = freshTable;
     else
         try
-            existingTable = local_read_existing_review_csv(mergePath);
+            existingTable = read_institutions_review_csv(mergePath);
             outTable = merge_institutions_review_table(freshTable, existingTable, string(datetime('today', 'Format', 'yyyy-MM-dd')));
         catch mergeErr
             warning('prepare_institutions_csv:MergeSkipped', ...
@@ -311,65 +311,4 @@ accountSort = string(T.account);
 [~, ix] = sortrows(table(accountSort, statusRank, includeRank, worksSort, idSort), ...
     {'accountSort','statusRank','includeRank','worksSort','idSort'});
 T = T(ix, :);
-end
-
-function T = local_read_existing_review_csv(csvPath)
-opts = detectImportOptions(csvPath, ...
-    'VariableNamingRule', 'preserve', ...
-    'Delimiter', ',');
-opts = setvartype(opts, opts.VariableNames, 'string');
-T = readtable(csvPath, opts);
-
-vars = string(T.Properties.VariableNames);
-accountCol = local_find_existing_column(vars, ["account","Account","input_name"]);
-idCol = local_find_existing_column(vars, ["openalex_institution_id","openalex_id"]);
-if accountCol == "" || idCol == ""
-    error('prepare_institutions_csv:MergeMissingColumn', ...
-        'mergeWith CSV must contain account/Account and openalex_institution_id/openalex_id.');
-end
-
-T = table( ...
-    strtrim(string(T.(accountCol))), ...
-    strtrim(string(T.(idCol))), ...
-    local_pick_or_default(T, vars, "display_name", ""), ...
-    local_pick_or_default(T, vars, "country_code", ""), ...
-    local_pick_numeric_or_default(T, vars, "works_count", NaN), ...
-    local_pick_or_default(T, vars, "include", ""), ...
-    local_pick_or_default(T, vars, "role", ""), ...
-    local_pick_or_default(T, vars, "note", ""), ...
-    local_pick_or_default(T, vars, "status", ""), ...
-    'VariableNames', {'account','openalex_institution_id','display_name','country_code','works_count','include','role','note','status'});
-end
-
-function col = local_find_existing_column(vars, candidates)
-col = "";
-for i = 1:numel(candidates)
-    idx = find(strcmpi(vars, candidates(i)), 1, 'first');
-    if ~isempty(idx)
-        col = vars(idx);
-        return;
-    end
-end
-end
-
-function vals = local_pick_or_default(T, vars, name, defaultValue)
-col = local_find_existing_column(vars, name);
-if col == ""
-    vals = repmat(string(defaultValue), height(T), 1);
-else
-    vals = strtrim(string(T.(col)));
-    vals(ismissing(vals)) = "";
-end
-end
-
-function vals = local_pick_numeric_or_default(T, vars, name, defaultValue)
-col = local_find_existing_column(vars, name);
-if col == ""
-    vals = repmat(double(defaultValue), height(T), 1);
-else
-    raw = string(T.(col));
-    raw(ismissing(raw)) = "";
-    vals = str2double(raw);
-    vals(isnan(vals)) = defaultValue;
-end
 end

@@ -25,6 +25,9 @@ arguments
     timeoutSec (1,1) double {mustBePositive(timeoutSec)} = 10
 end
 
+% mask_api_key lives in src/util; make sure it is callable when only src/openalex is on the path.
+addpath(fullfile(fileparts(fileparts(mfilename('fullpath'))), 'util'));
+
 info = struct();
 info.ok = false;
 info.can_query = false;
@@ -56,7 +59,7 @@ url = "https://api.openalex.org/rate-limit?api_key=" + string(urlencode(char(api
 try
     resp = webread(char(url), weboptions("Timeout", timeoutSec));
 catch ex
-    info.error_message = string(ex.message);
+    info.error_message = mask_api_key(string(ex.message));
     return;
 end
 

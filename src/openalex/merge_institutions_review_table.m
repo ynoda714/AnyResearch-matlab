@@ -22,7 +22,8 @@ freshKeys = local_make_keys(fresh.account, fresh.openalex_institution_id);
 existingKeys = local_make_keys(existing.account, existing.openalex_institution_id);
 
 keepFresh = true(height(fresh), 1);
-merged = fresh([],:);
+freshRows = fresh([],:);
+carriedRows = fresh([],:);
 
 for i = 1:height(fresh)
     key = freshKeys(i);
@@ -39,7 +40,7 @@ for i = 1:height(fresh)
         row.include = local_preserve_include(existing.include(idxExisting), fresh.include(i));
         row.role = existing.role(idxExisting);
         row.note = existing.note(idxExisting);
-        merged = [merged; row]; %#ok<AGROW>
+        freshRows = [freshRows; row]; %#ok<AGROW>
         keepFresh(i) = false;
         continue;
     end
@@ -49,7 +50,7 @@ for i = 1:height(fresh)
     if any(existingAccounts == row.account)
         row.note = local_append_note(row.note, "new candidate since " + dateText);
     end
-    merged = [merged; row]; %#ok<AGROW>
+    freshRows = [freshRows; row]; %#ok<AGROW>
     keepFresh(i) = false;
 end
 
@@ -64,15 +65,15 @@ for i = 1:height(existing)
 
     row = existing(i, :);
     row.note = local_append_note(row.note, "not returned by API on " + dateText);
-    merged = [merged; row]; %#ok<AGROW>
+    carriedRows = [carriedRows; row]; %#ok<AGROW>
 end
 
 freshResidual = fresh(keepFresh, :);
 if ~isempty(freshResidual)
-    merged = [merged; freshResidual]; %#ok<AGROW>
+    freshRows = [freshRows; freshResidual]; %#ok<AGROW>
 end
 
-merged = local_order_rows(merged);
+merged = [local_order_rows(freshRows); local_order_rows(carriedRows)];
 end
 
 function T = local_normalize_table(T)
