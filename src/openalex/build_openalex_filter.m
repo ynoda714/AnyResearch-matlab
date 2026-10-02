@@ -56,8 +56,9 @@ end
 if strlength(strtrim(language)) > 0
     parts(end+1) = "language:" + string(language); %#ok<AGROW>
 end
-if strlength(strtrim(filterCountryCode)) > 0
-    parts(end+1) = "authorships.institutions.country_code:" + strtrim(string(filterCountryCode)); %#ok<AGROW>
+countryExpr = normalize_country_expression(string(filterCountryCode));   % "|" = OR, "+" = AND (ADR-004)
+if countryExpr ~= ""
+    parts(end+1) = "authorships.institutions.country_code:" + countryExpr; %#ok<AGROW>
 end
 % filterType: multiple types can be given as "article,review". Pipe-separated values are expanded to type:val|val.
 if strlength(strtrim(filterType)) > 0

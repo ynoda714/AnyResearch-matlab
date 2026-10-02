@@ -47,18 +47,20 @@
                                                                 <Children>
                                                                     <GridLayout name='BasicGrid'>
                                                                         <ColumnWidth>{170, 170, '1x'}</ColumnWidth>
-                                                                        <RowHeight>{'fit', 'fit', 'fit', 'fit', 'fit', 'fit'}</RowHeight>
+                                                                        <RowHeight>{'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'}</RowHeight>
                                                                         <Padding>[12 12 12 12]</Padding>
                                                                         <RowSpacing>5</RowSpacing>
                                                                         <Children>
                                                                             <Label name='QueryLabel'><Text>'Query'</Text><Layout><Column>[1 3]</Column><Row>1</Row></Layout></Label>
-                                                                            <EditField name='QueryEditField'><Placeholder>'e.g. machine learning AND (radar | lidar)'</Placeholder><Layout><Column>[1 3]</Column><Row>2</Row></Layout></EditField>
+                                                                            <EditField name='QueryEditField'><Placeholder>'e.g. machine learning AND (radar | lidar)'</Placeholder><Tooltip>'Space = AND, | = OR, "..." = exact phrase, ( ) = grouping. Example: "Simulink model" | Stateflow. To mix AND and OR, use parentheses: a (b | c).'</Tooltip><Layout><Column>[1 3]</Column><Row>2</Row></Layout></EditField>
                                                                             <Label name='FromDateLabel'><Text>'From date'</Text><Layout><Column>1</Column><Row>3</Row></Layout></Label>
                                                                             <Label name='ToDateLabel'><Text>'To date'</Text><Layout><Column>2</Column><Row>3</Row></Layout></Label>
                                                                             <DatePicker name='FromDatePicker'><DisplayFormat>'yyyy-MM-dd'</DisplayFormat><Layout><Column>1</Column><Row>4</Row></Layout></DatePicker>
                                                                             <DatePicker name='ToDatePicker'><DisplayFormat>'yyyy-MM-dd'</DisplayFormat><Layout><Column>2</Column><Row>4</Row></Layout></DatePicker>
                                                                             <Label name='SortByLabel'><Text>'Sort order'</Text><Layout><Column>[1 2]</Column><Row>5</Row></Layout></Label>
                                                                             <DropDown name='SortByDropDown'><Items>{'cited_by_count:desc', 'publication_date:desc', 'relevance_score'}</Items><Value>'cited_by_count:desc'</Value><Tooltip>'cited_by_count:desc = most cited first; publication_date:desc = newest first; relevance_score = best match to the query first.'</Tooltip><Layout><Column>[1 2]</Column><Row>6</Row></Layout></DropDown>
+                                                                            <Label name='SearchFieldLabel'><Text>'Search in'</Text><Layout><Column>[1 2]</Column><Row>7</Row></Layout></Label>
+                                                                            <DropDown name='SearchFieldDropDown'><Items>{'all', 'title_and_abstract'}</Items><Value>'all'</Value><Tooltip>'all = searches title, abstract and full text (broader, default); title_and_abstract = only the title and abstract, which is what the results table shows.'</Tooltip><Layout><Column>[1 2]</Column><Row>8</Row></Layout></DropDown>
                                                                         </Children>
                                                                     </GridLayout>
                                                                 </Children>
@@ -82,7 +84,7 @@
                                                                             <Label name='LanguageLabel'><Text>'Language'</Text><Layout><Column>1</Column><Row>5</Row></Layout></Label>
                                                                             <Label name='CountryCodeLabel'><Text>'Country code'</Text><Layout><Column>2</Column><Row>5</Row></Layout></Label>
                                                                             <EditField name='LanguageEditField'><Value>'en'</Value><Tooltip>'Language code of the works, e.g. en or ja. Leave blank for all languages.'</Tooltip><Layout><Column>1</Column><Row>6</Row></Layout></EditField>
-                                                                            <EditField name='CountryCodeEditField'><Value>'JP'</Value><Tooltip>'2-letter country code of the authors'' institutions, e.g. JP. Leave blank for all countries.'</Tooltip><Layout><Column>2</Column><Row>6</Row></Layout></EditField>
+                                                                            <EditField name='CountryCodeEditField'><Value>'JP'</Value><Tooltip>'2-letter country codes of any author''s institution (not only the first author). | = OR (JP|US); + = AND, works with authors from every listed country (JP+US). Leave blank for all countries.'</Tooltip><Layout><Column>2</Column><Row>6</Row></Layout></EditField>
                                                                             <CheckBox name='RequireOpenAccessCheckBox'><Text>'Require Open Access'</Text><Value>true</Value><Layout><Column>[1 3]</Column><Row>7</Row></Layout></CheckBox>
                                                                             <CheckBox name='RequireAbstractCheckBox'><Text>'Require abstract'</Text><Value>true</Value><Layout><Column>[1 3]</Column><Row>8</Row></Layout></CheckBox>
                                                                         </Children>

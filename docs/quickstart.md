@@ -72,6 +72,22 @@ enablePdfDownload   = false;    % Layer 3: PDF download
 | AND | Separate with spaces | `"renewable energy forecasting"` |
 | OR | Use `|` | `"solar|wind energy"` |
 | Phrase | Wrap in quotes | `'"deep learning"'` |
+| Grouping | Use parentheses | `"MATLAB (Simulink\|Octave)"` |
+
+AND and OR cannot be mixed without parentheses: `"a b|c"` is rejected, write `"a (b|c)"` (or `"(a b)|c"`). Uppercase `AND` / `OR` are accepted as words for the same operations; lowercase `and` / `or` are ordinary search words.
+
+**Country filter (`filterCountryCode`):** 2-letter codes, matched against the institutions of **any** author (not only the first author).
+| Operation | Syntax | Example |
+|---|---|---|
+| One country | Code | `"JP"` |
+| OR | Use `\|` (`,` and `;` also work) | `"JP\|US"` |
+| AND (international co-authorship) | Use `+` | `"JP+US"` |
+
+Codes are upper-cased automatically. Do not mix `|` and `+`, and do not separate codes with spaces.
+
+**Where the query is searched (`searchField`, GUI: *Search in*):** `"all"` (default) searches the title, abstract and full text, so some results do not show the query words in the title or abstract. `"title_and_abstract"` restricts the search to the title and abstract. Pass it to `run_pipeline(..., searchField="title_and_abstract")`; the GUI has the same choice under *Search in*.
+
+The same query syntax is used to find keyword evidence in downloaded PDFs (Layer 3): the PDF text satisfies the query when all AND terms appear anywhere in it.
 
 **`sortBy` options:**
 | Value | Description |
@@ -445,7 +461,7 @@ Check the following in order:
 2. Check that `fromDate` / `toDate` is not too narrow (try widening the range)
 3. Try `requireOpenAccess=false` if you have OA-only filtering enabled
 4. Try `requireAbstract=false` to include recent papers that lack an abstract
-5. If `filterCountryCode` is set, try clearing it to `""` temporarily
+5. If `filterCountryCode` is set, try clearing it to `""` temporarily. Note that `"JP+US"` (AND) only keeps works with authors from both countries
 
 ---
 

@@ -64,6 +64,9 @@ Search syntax:
 - AND: separate with spaces
 - OR: use `|`
 - Phrase: wrap in quotes
+- Grouping: `( )`. Mix AND and OR only with parentheses, e.g. `MATLAB (Simulink | Octave)`
+
+See [Quick Start](docs/quickstart.md) for the Country filter (`JP|US`, `JP+US`) and for searching titles and abstracts only.
 
 Run Section 0 and then Section 1 with **Run Section** (`Ctrl+Enter`).  
 Outputs are saved under `result/runs/<YYYYMMDD_HHMMSS>/`.

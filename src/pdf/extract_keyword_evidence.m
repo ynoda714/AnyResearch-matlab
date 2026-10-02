@@ -16,6 +16,9 @@ q = strtrim(string(queryText));
 if q == ""
     error("extract_keyword_evidence:EmptyQuery", "queryText is empty.");
 end
+% Same grammar as the OpenAlex Query (space = AND, | = OR, phrase, parentheses).
+% Invalid expressions fail here, before any row is processed.
+expr = parse_search_expression(q);
 
 T = local_read_pdf_text_table(pdfTextInput);
 required = ["openalex_id","work_id","extract_status","body_text_excerpt"];
@@ -39,7 +42,12 @@ for i = 1:height(T)
 
     if (estatus == "ok" || estatus == "ok_python_fallback") && strlength(strtrim(body)) > 0
         cleaned = local_remove_references_and_notes(body);
-        [snippets, pos] = local_find_contexts_lines(cleaned, q, opts.contextLines, opts.maxEvidencePerRow);
+        if match_search_expression(expr, cleaned)
+            [snippets, pos] = local_find_contexts_lines(cleaned, expr.terms, opts.contextLines, opts.maxEvidencePerRow);
+        else
+            snippets = strings(0,1);
+            pos = zeros(0,1);
+        end
         if isempty(snippets)
             evidenceStatus = "not_found";
         else
@@ -177,13 +185,13 @@ end
 
 
 % New policy: extract N lines before/after keyword (e.g. 2 lines)
-function [snippets, positions] = local_find_contexts_lines(text, queryText, contextLines, maxN)
+function [snippets, positions] = local_find_contexts_lines(text, terms, contextLines, maxN)
 % Revised: case-insensitive search, extract N surrounding lines, deduplicate
 lines = splitlines(string(text));
 nLines = numel(lines);
 hitIdx = [];
 for i = 1:nLines
-    if contains(lines(i), queryText, 'IgnoreCase', true)
+    if any(contains(lines(i), terms, 'IgnoreCase', true))
         hitIdx(end+1) = i; %#ok<AGROW>
     end
 end

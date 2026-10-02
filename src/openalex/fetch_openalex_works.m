@@ -10,6 +10,8 @@
 %   filterCountryCode (string, default "") — When non-empty,
 %                  appends "authorships.institutions.country_code:<code>" to filter.
 %                  Example: "JP" -> Japan filter
+%   searchField    (string, default "all") — "all" searches full text via search=;
+%                  "title_and_abstract" restricts the query to title and abstract.
 %   sort           (string, default "") — Sort order for results.
 %                  Example: "cited_by_count:desc" / "publication_date:desc" / "relevance_score"
 arguments
@@ -26,6 +28,7 @@ arguments
     opts.timeoutSec (1,1) double {mustBePositive(opts.timeoutSec)} = 60
     opts.dryRun (1,1) logical = false
     opts.filterCountryCode (1,1) string = ""
+    opts.searchField (1,1) string = "all"
     opts.sort (1,1) string = ""
     opts.saveRawResponses (1,1) logical = false
     opts.rawResponseDir (1,1) string = ""
@@ -33,9 +36,18 @@ end
 
 % If filterCountryCode is specified, append it to the filter
 effectiveFilter = string(opts.filter);
-if strlength(strtrim(opts.filterCountryCode)) > 0
-    effectiveFilter = effectiveFilter + ",authorships.institutions.country_code:" + strtrim(opts.filterCountryCode);
+countryExpr = normalize_country_expression(opts.filterCountryCode);
+if countryExpr ~= ""
+    effectiveFilter = effectiveFilter + ",authorships.institutions.country_code:" + countryExpr;
 end
+
+% Query grammar (ADR-004): "all" goes to search=, "title_and_abstract" becomes a filter.
+searchParams = build_openalex_search_params(opts.searchQuery, opts.searchField);
+if searchParams.filterPart ~= ""
+    effectiveFilter = effectiveFilter + "," + searchParams.filterPart;
+end
+% Spaces and quotes in the filter value must be percent-encoded; "+" (AND) and "|" stay literal.
+effectiveFilter = replace(replace(effectiveFilter, " ", "%20"), """", "%22");
 
 % When dryRun=true, use perPage=1, maxPages=1 to fetch count only
 effectivePerPage  = opts.perPage;
@@ -59,9 +71,9 @@ while pageCount < effectiveMaxPages
     pageCount = pageCount + 1;
     queryKeys = {"filter", "per-page", "cursor", "select"};
     queryVals = {char(effectiveFilter), char(string(effectivePerPage)), char(cursor), char(opts.selectFields)};
-    if opts.searchQuery ~= ""
+    if searchParams.search ~= ""
         queryKeys{end+1} = "search"; %#ok<AGROW>
-        queryVals{end+1} = char(opts.searchQuery); %#ok<AGROW>
+        queryVals{end+1} = char(searchParams.search); %#ok<AGROW>
     end
     if strlength(strtrim(opts.sort)) > 0
         sortValue = strtrim(opts.sort);
@@ -86,14 +98,7 @@ while pageCount < effectiveMaxPages
         k = string(queryKeys{qi});
         v = string(queryVals{qi});
         if k == "search" || k == "mailto"
-            if k == "search"
-                % Normalize AnyResearch OR syntax to the OpenAlex search syntax.
-                v = replace(v, "\|", "|");
-                v = replace(v, "|", " OR ");
-                v = regexprep(v, '\s+', ' ');
-                v = strtrim(v);
-            end
-            v = string(urlencode(char(v)));
+            v =string(urlencode(char(v)));
         elseif k == "cursor" && v == "*"
             v = "%2A";
         end

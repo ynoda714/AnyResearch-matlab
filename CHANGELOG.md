@@ -11,6 +11,38 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-02
+
+### Added
+- One search syntax for **Query**, **Country code** and the PDF keyword evidence:
+  space = AND, `|` = OR, `"..."` = exact phrase, `( )` = grouping.
+  Uppercase `AND` / `OR` are accepted as the same operations.
+- **Country code** accepts several countries: `JP|US` (any of them) and `JP+US`
+  (works with authors from every listed country, e.g. international
+  co-authorship). `,` and `;` also work as OR separators, and codes are
+  upper-cased automatically.
+- A **Search in** choice on the Search tab (`searchField` in scripts):
+  `all` (default, as before) searches title, abstract and full text;
+  `title_and_abstract` searches only the title and abstract, which is what the
+  results table shows. The choice is recorded in `run_meta.json`.
+- Tooltips for Query, Country code and Search in explain the syntax.
+
+### Changed
+- Query and Country code are now validated before a search starts. Invalid
+  input stops the run with "Check your input" and a message that says how to fix
+  it, instead of failing at OpenAlex or returning unexpected results. The Batch
+  query is validated the same way.
+- AND and OR can no longer be mixed in one Query without parentheses:
+  `a b | c` is rejected; write `a (b | c)` or `(a b) | c`.
+- Keyword evidence in downloaded PDFs (Layer 3) now follows the Query syntax.
+  A PDF matches when its text satisfies the whole expression, so
+  `MATLAB Simulink` and `a | b` are found. Previously the whole query was
+  searched as one continuous phrase.
+
+### Fixed
+- `JP,US` in Country code used to fail with an OpenAlex HTTP 400 error. It is now
+  treated as `JP|US`.
+
 ## [1.13.0] - 2026-10-02
 
 ### Added

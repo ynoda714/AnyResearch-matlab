@@ -21,6 +21,7 @@
 %     firstAuthorInstitution    : Institution name filter (default: "")
 %     firstAuthorInstitutionId  : Institution ID filter(s) (default: "")
 %     firstAuthorInstitutionAliases : Institution name aliases (default: strings(0,1))
+%     searchField               : "all" (full text, default) or "title_and_abstract" (ADR-004)
 %     sortBy                    : Sort order (default: "") e.g. "cited_by_count:desc" / "publication_date:desc" / "relevance_score"
 %     filterType                : Document type filter (default: "") e.g. "article" / "review" / "article,review"
 %     citedByMin                : Minimum cited_by_count filter (default: 0 = disabled)
@@ -77,6 +78,7 @@ arguments
     options.firstAuthorInstitutionId                string  = strings(0,1)
     options.firstAuthorInstitutionAliases           string  = strings(0,1)
     options.sortBy                          (1,1) string  = ""
+    options.searchField                     (1,1) string  = "all"
     options.filterType                      (1,1) string  = ""
     options.excludeRetracted                (1,1) logical = true
     options.citedByMin                      (1,1) double  = 0
@@ -164,6 +166,7 @@ saveRawResponses             = options.saveRawResponses;
 appendToCandidates           = options.appendToCandidates;
 ledgerPath                   = options.ledgerPath;
 sortBy                       = options.sortBy;
+searchField                  = options.searchField;
 filterType                   = options.filterType;
 topN                         = options.topN;
 enableBibtex                 = options.enableBibtex;
@@ -232,7 +235,7 @@ overrideSettingsJson = string(fullfile(ctx.logs_dir, 'settings_front_override.js
 local_write_front_settings_json( ...
     overrideSettingsJson, query, filterText, maxPages, candidateMaxPages, maxRecords, maxRowsForValidation, ...
     samplingMode, mailto, firstAuthorInstitution, firstAuthorInstitutionId, ...
-    resolvedInstitutionIds, firstAuthorInstitutionAliases, firstAuthorFilterMode, sortBy);
+    resolvedInstitutionIds, firstAuthorInstitutionAliases, firstAuthorFilterMode, sortBy, searchField);
 
 log_info("filter=%s", filterText);
 if strlength(strtrim(firstAuthorInstitution)) > 0
@@ -302,7 +305,7 @@ catch ex
         % Write run_meta.json
         zeroMeta = local_make_base_run_meta( ...
             ctx, query, filterText, sortBy, filterType, ...
-            firstAuthorInstitution, resolvedInstitutionIds, useArxiv, seedId, snowballMode);
+            firstAuthorInstitution, resolvedInstitutionIds, useArxiv, seedId, snowballMode, searchField);
         zeroMeta.steps = struct( ...
             'openalex_fetch',      struct('status', 'ok_zero'), ...
             'arxiv_fetch',         struct('status', 'skipped'), ...
@@ -576,7 +579,7 @@ end
 %% Save run_meta.json
 runMeta = local_make_base_run_meta( ...
     ctx, query, filterText, sortBy, filterType, ...
-    firstAuthorInstitution, resolvedInstitutionIds, useArxiv, seedId, snowballMode);
+    firstAuthorInstitution, resolvedInstitutionIds, useArxiv, seedId, snowballMode, searchField);
 
 steps                      = struct();
 steps.openalex_fetch       = local_step_status(apiRes, 'openalex_raw_csv');
@@ -687,9 +690,12 @@ end
 function local_write_front_settings_json( ...
         path, query, filterText, maxPages, candidateMaxPages, maxRecords, maxRowsForValidation, ...
         samplingMode, mailto, firstAuthorInstitution, firstAuthorInstitutionId, ...
-        firstAuthorInstitutionIds, firstAuthorInstitutionAliases, firstAuthorFilterMode, sortBy)
+        firstAuthorInstitutionIds, firstAuthorInstitutionAliases, firstAuthorFilterMode, sortBy, searchField)
 if nargin < 14
     sortBy = "";
+end
+if nargin < 15
+    searchField = "all";
 end
 parentDir = fileparts(path);
 if strlength(parentDir) > 0 && ~isfolder(parentDir)
@@ -701,6 +707,7 @@ s.openalex                               = struct();
 s.openalex.search_query                  = char(strtrim(string(query)));
 s.openalex.filter                        = char(strtrim(string(filterText)));
 s.openalex.sort                          = char(strtrim(string(sortBy)));
+s.openalex.search_field                  = char(strtrim(string(searchField)));
 s.openalex.api_key                       = '';  % never persisted to run logs; resolved at fetch time (env > config/settings.json)
 s.openalex.per_page                      = 100;
 s.openalex.max_pages                     = round(maxPages);
@@ -735,7 +742,7 @@ end
 
 function meta = local_make_base_run_meta( ...
         ctx, query, filterText, sortBy, filterType, ...
-        firstAuthorInstitution, resolvedInstitutionIds, useArxiv, seedId, snowballMode)
+        firstAuthorInstitution, resolvedInstitutionIds, useArxiv, seedId, snowballMode, searchField)
 meta = struct();
 meta.run_id                      = ctx.run_id;
 meta.run_dir                     = ctx.run_dir;
@@ -744,6 +751,7 @@ meta.status                      = "completed";
 meta.query                       = query;
 meta.filter                      = filterText;
 meta.sort_by                     = sortBy;
+meta.search_field                = searchField;
 meta.filter_type                 = filterType;
 meta.first_author_institution    = firstAuthorInstitution;
 meta.first_author_institution_ids = strjoin(resolvedInstitutionIds, " | ");

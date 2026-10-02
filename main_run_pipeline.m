@@ -15,6 +15,7 @@ toDate   = "2026-07-18";
 %   AND : separate with spaces  e.g. "deep learning classification"
 %   OR  : use |                 e.g. "solar|wind energy"
 %   Phrase: wrap in quotes      e.g. '"machine learning"'
+%   Group : use ( )              e.g. "MATLAB (Simulink|Octave)"  (AND and OR need parentheses to be mixed)
 
 % ── Layer 0: Sort order & document type filter (optional) ───────────
 sortBy     = "cited_by_count:desc";   % "cited_by_count:desc" / "publication_date:desc" / "relevance_score" / ""

@@ -7,6 +7,29 @@
 
 ## Unreleased
 
+## 1.14.0 - 2026-10-02
+
+### 追加
+- **Query**・**Country code**・PDF のキーワード証跡で、同じ検索構文を使えるようにした。
+  スペース＝AND、`|`＝OR、`"..."`＝フレーズ、`( )`＝グループ化。大文字の `AND` / `OR` も同じ意味で使える。
+- **Country code** で複数の国を指定できるようにした。`JP|US`（いずれか）と `JP+US`（列挙した全ての国の著者を含む論文。
+  国際共著の抽出など）。`,` と `;` も OR の区切りとして使え、コードは自動で大文字になる。
+- Search タブに **Search in** を追加した（スクリプトでは `searchField`）。`all`（既定。従来どおり）はタイトル・abstract・
+  全文を対象にし、`title_and_abstract` はタイトルと abstract だけを対象にする（結果表に見える範囲）。
+  選択は `run_meta.json` に記録される。
+- Query・Country code・Search in のツールチップで構文を説明するようにした。
+
+### 変更
+- 検索を始める前に Query と Country code を検証するようにした。不正な入力は、OpenAlex 側でのエラーや想定外の結果
+  ではなく、「Check your input」と修正方法を示すメッセージで止まる。Batch の Query も同様に検証する。
+- 1 つの Query で AND と OR を括弧なしで混ぜられなくなった。`a b | c` は受け付けず、`a (b | c)` または
+  `(a b) | c` と書く。
+- ダウンロードした PDF のキーワード証跡（Layer 3）が Query の構文に従うようにした。PDF 本文が式全体を満たせば
+  該当とし、`MATLAB Simulink` や `a | b` も見つかる。以前はクエリ全体を 1 つの連続したフレーズとして検索していた。
+
+### 修正
+- Country code の `JP,US` が OpenAlex の HTTP 400 エラーになっていた。`JP|US` として扱うようにした。
+
 ## 1.13.0 - 2026-10-02
 
 ### 追加

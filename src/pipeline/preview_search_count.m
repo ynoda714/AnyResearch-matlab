@@ -20,6 +20,7 @@ arguments
     options.firstAuthorInstitutionId           string = strings(0,1)
     options.firstAuthorInstitutionAliases      string = strings(0,1)
     options.sortBy                     (1,1) string = ""
+    options.searchField                (1,1) string = "all"
 end
 
 thisDir = fileparts(mfilename('fullpath'));
@@ -35,7 +36,7 @@ filterText = build_openalex_filter(fromDate, toDate, options.language, ...
     options.filterType, options.requireAbstract, options.excludeRetracted, ...
     options.citedByMin, options.citedByMax);
 apiKey = load_openalex_api_key(fullfile(projectRoot, 'config', 'settings.json'), true);
-[~, meta] = fetch_openalex_works(searchQuery=query, filter=filterText, ...
+[~, meta] = fetch_openalex_works(searchQuery=query, searchField=options.searchField, filter=filterText, ...
     perPage=1, maxPages=1, apiKey=apiKey, sort=options.sortBy, ...
     dryRun=true, saveRawResponses=false);
 
